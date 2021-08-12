@@ -42,4 +42,8 @@ Computer Graphics (2021);  University of Canterbury
   *  'f' Toggle fog
   *  'g' Toggle Smooth shading
   
-  
+&nbsp;
+
+**Run Program:**
+* On the Makefile Level - Type the command 'make && make program' in the command prompt
+
