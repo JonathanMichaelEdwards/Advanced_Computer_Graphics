@@ -1,13 +1,26 @@
-//  ========================================================================
-//  COSC363: Computer Graphics (2021);  University of Canterbury.
-//
-//  FILE NAME: TerrainPatches.cpp
-//  See Lab-11.pdf for details.
-//
-//	The program generates and loads the mesh data for a terrain floor (100 verts, 81 elems).
-//  Requires files  TerrainPatches.vert, TerrainPatches.frag
-//                  TerrainPatches.cont, TerrainPatches.eval
-//  ========================================================================
+/***************************************************************************************************
+ * 
+ * FILE: TerrainModel.cpp
+ * DATE: Due: 11:55pm, Sunday, 15 August 2021
+ * AUTHOR:  Jonathan Edwards
+ * 
+ * DESCRIPTION:
+ *              COSC422 Assessment 1: Computer Graphics (2021);  University of Canterbury
+ * 
+ * 				The tessellation and geometry shader stages of the OpenGL-4 programmable pipeline 
+ * 				have found several applications in modelling and rendering of three dimensional objects. 
+ * 				In this assignment, you will use these shader stages to generate a terrain model.
+ * 
+ * 				The Keys can be found in the report and/or the README 
+ * 
+ * SOURCES:
+ * 			-
+ * 			-
+ * 			-
+ * 
+***************************************************************************************************/
+
+
 #define  GLM_FORCE_RADIANS
 #include <iostream>
 #include <fstream>
