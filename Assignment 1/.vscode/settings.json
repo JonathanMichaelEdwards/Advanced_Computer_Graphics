@@ -3,7 +3,8 @@
         "*.h": "c",
         "sstream": "c",
         "fstream": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "new": "cpp"
     },
 
     "actionButtons": {

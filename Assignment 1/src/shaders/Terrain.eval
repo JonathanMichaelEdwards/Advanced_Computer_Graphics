@@ -2,16 +2,19 @@
 
 layout(quads, equal_spacing, ccw) in;
 
+
 uniform mat4 mvpMatrix;
 uniform sampler2D heightMap;
+uniform float water_level;
+uniform float snow_level;
 
+out vec2 texCoord;
 
 void main()
 {
     float xmin = -45, xmax = +45, zmin = 0, zmax = -100;
     vec4 posn;
     float s, t;
-    vec2 tcoord;
 
     float u = gl_TessCoord.x;
     float v = gl_TessCoord.y;
@@ -24,10 +27,14 @@ void main()
     s = ((posn.x) - xmin) / (xmax - xmin);
     t = ((posn.z) - zmin) / (zmax - zmin);
 
-    tcoord = vec2(s, t);
+    texCoord = vec2(s, t);
     
-    float height = texture(heightMap, tcoord).r;
+    float height = texture(heightMap, texCoord).r;
     posn.y = height * 10.0;  // Scale
+
+    if (posn.y < water_level) 
+        posn.y = water_level;
+    
 
     gl_Position = mvpMatrix * posn;
 }

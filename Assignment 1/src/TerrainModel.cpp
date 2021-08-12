@@ -21,6 +21,7 @@
 ***************************************************************************************************/
 
 
+
 #define  GLM_FORCE_RADIANS
 #include <iostream>
 #include <fstream>
@@ -38,6 +39,8 @@ using namespace std;
 #define SPACE   0x20
 #define ESC     0x1B
 
+#define NUM_TEXTURES 2
+
 
 typedef enum
 {
@@ -47,27 +50,34 @@ typedef enum
 
 
 // Globals
-GLuint vaoID;
+GLuint program;
+GLuint vaoID, texID[NUM_TEXTURES];
 GLuint eyeLoc, levelLoc;
-GLuint mvpMatrixLoc;
+GLuint mvpMatrixLoc, mvMatrixLoc, norMatrixLoc;
 float CDR = 3.14159265/180.0;     //Conversion from degrees to rad (required in GLM 0.9.6)
 float verts[100*3];       //10x10 grid (100 vertices)
 GLushort elems[81*4];       //Element array for 81 quad patches
-glm::mat4 projView;
+glm::mat4 proj, view, projView;  //Matrices
 glm::vec4 eyePos(0.0, 20.0, 30.0, 40.0);  /* scene view (x, y, z, zoom) */
 glm::vec3 lookPos(0.0, 0.0, -60.0);  /* scene view */
 float angle = 0.f;
-bool view = false;
+bool frame_view = false;
+GLuint water_Loc, snow_Loc;
+float water_level = 3;
+float snow_level = 5;
 
 
 
-//Generate vertex and element data for the terrain floor
-void generateData()
+
+// Generate vertex and element data for the terrain floor
+void 
+generateData()
 {
+	
 	int indx, start;
 	//verts array
-	for(int i = 0; i < 10; i++)   //100 vertices on a 10x10 grid
-	{
+	for(int i = 0; i < 10; i++)   // 100 vertices on a 10x10 grid
+	{ 
 		for(int j = 0; j < 10; j++)
 		{
 			indx = 10*i + j;
@@ -92,35 +102,51 @@ void generateData()
 	}
 }
 
-// Loads terrain texture
+// Loads Textures
 void 
 loadTextures(Terrain terrain)
 {
-	GLuint texID;
-    glGenTextures(1, &texID);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texID);
-	
+    glGenTextures(NUM_TEXTURES, texID);  /* Generate texture ID */
+
+
 	// Load either MtCook.tga or MtRuapehu.tga
+    glActiveTexture(GL_TEXTURE0);  /* Texture unit 0 */
+    glBindTexture(GL_TEXTURE_2D, texID[0]);
+	
 	switch (terrain) 
 	{
 		case MT_COOK:
-			loadTGA("./src/height_maps/MtCook.tga");
+			loadTGA("./src/height_maps/MtCook.tga");  /* Height Map */
 			break;
 		case MT_RUAPEHU:
-			loadTGA("./src/height_maps/MtRuapehu.tga");
+			loadTGA("./src/height_maps/MtRuapehu.tga");  /* Height Map */
 			break;
 	}
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+
+	// Load either MtCook.tga or MtRuapehu.tga
+    glActiveTexture(GL_TEXTURE1);  /* Texture unit 0 */
+    glBindTexture(GL_TEXTURE_2D, texID[1]);
+
+	// Load Moss Texture
+	loadTGA("./src/mesh_models/Moss.tga");
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+	// glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
 }
 
 
 void 
 Load_View(void)
 {
-	if (!(view=!view))
+	if (!(frame_view = !frame_view))
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  // Wire view if true
 	else 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -129,7 +155,8 @@ Load_View(void)
 
 
 //Loads a shader file and returns the reference to a shader object
-GLuint loadShader(GLenum shaderType, string filename)
+GLuint 
+loadShader(GLenum shaderType, string filename)
 {
 	ifstream shaderFile(filename.c_str());
 	if(!shaderFile.good()) cout << "Error opening shader file." << endl;
@@ -157,6 +184,8 @@ GLuint loadShader(GLenum shaderType, string filename)
 	return shader;
 }
 
+
+
 //Initialise the shader program, create and load buffer data
 void initialise()
 {
@@ -173,7 +202,7 @@ void initialise()
 	// GLuint shaderg = loadShader(GL_GEOMETRY_SHADER, "./src/shaders/Terrain.geom");
 
 	//--------Attach shaders---------------------
-	GLuint program = glCreateProgram();
+	program = glCreateProgram();
 	glAttachShader(program, shaderv);
 	glAttachShader(program, shaderf);
 	glAttachShader(program, shaderc);
@@ -195,11 +224,45 @@ void initialise()
 	}
 	glUseProgram(program);
 
+
+	/* Mapping elements for shader's use */
+
 	mvpMatrixLoc = glGetUniformLocation(program, "mvpMatrix");
-	GLuint texLoc = glGetUniformLocation(program, "heightMap");
-	glUniform1i(texLoc, 0);
-	eyeLoc = glGetUniformLocation(program, "eyePos");
+	mvMatrixLoc = glGetUniformLocation(program, "mvMatrix");
+	norMatrixLoc = glGetUniformLocation(program, "norMatrix");
+	GLuint lgtLoc = glGetUniformLocation(program, "lightPos");
+
+	/* Motion view */
+	eyeLoc = glGetUniformLocation(program, "eyePos");  
 	glUniform1i(eyeLoc, 0);
+
+	// /* Terrain layout */
+	// GLuint tex_map_Loc = glGetUniformLocation(program, "heightMap"); 
+	// glUniform1i(tex_map_Loc, 0);
+
+
+
+	/* Terrain texture */
+	GLuint grass_Loc = glGetUniformLocation(program, "grass");
+	glUniform1i(grass_Loc, 1);
+
+
+
+	// /* Water texture */
+	// glUniform1f(glGetUniformLocation(program, "water_level"), water_level);
+
+	// /* snow texture */
+	// GLuint snow_Loc = glGetUniformLocation(program, "snow_level");
+	// glUniform1i(snow_Loc, 0);
+
+
+	glm::vec4 light = glm::vec4(10.0, 10.0, 10.0, 1.0);
+	proj = glm::perspective(20.0f*CDR, 1.0f, 10.0f, 1000.0f);  //perspective projection matrix
+	view = glm::lookAt(glm::vec3(0.0, 5.0, 12.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0)); //view matrix
+	glm::vec4 lightEye = view*light;     //Light position in eye coordinates
+	glUniform4fv(lgtLoc, 1, &lightEye[0]);
+	projView = proj*view;  //Product matrix
+
 
 
 	//---------Load buffer data-----------------------
@@ -212,12 +275,21 @@ void initialise()
     glGenBuffers(2, vboID);
 
     glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);   // Vertices
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(0);  // Vertex position
 
+	/* Normals */
+	// 
+
+	// /* Texture Coords */
+	// glBindBuffer(GL_ARRAY_BUFFER, vboID[2]);
+    // glBufferData(GL_ARRAY_BUFFER, 24 * 2 * sizeof(float), texCoord, GL_STATIC_DRAW);  //Texture Coords
+    // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+    // glEnableVertexAttribArray(2);  // texture coords
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elems), elems, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elems), elems, GL_STATIC_DRAW);  //Vertex indices
 
     glBindVertexArray(0);
 
@@ -232,7 +304,7 @@ void initialise()
 // Display function to compute uniform values based on transformation parameters and to draw the scene
 void display()
 {
-	glm::mat4 proj, view;   //Projection and view matrices
+	//Projection and view matrices
 	proj = glm::perspective(30.0f*CDR, 1.25f, 20.0f, 500.0f);  //perspective projection matrix
 
 	/*  lookAt(eye, centre, up)
@@ -240,11 +312,18 @@ void display()
 	 * centre - (0, 0, cam_pitch)
 	 * up - Orientation of the camera
 	*/
-	view = glm::lookAt( glm::vec3(eyePos.x, eyePos.y, eyePos.z), lookPos, glm::vec3(0.0, 1.0, 0.0)); //view matrix
-	projView = proj * view;  // Product matrix
+	glm::mat4 mvMatrix = glm::lookAt( glm::vec3(eyePos.x, eyePos.y, eyePos.z), lookPos, glm::vec3(0.0, 1.0, 0.0)); //view matrix
+	glm::mat4 mvpMatrix = proj * mvMatrix; // Product matrix
 
-	glUniformMatrix4fv(mvpMatrixLoc, 1, GL_FALSE, &projView[0][0]);
+	glm::mat4 invMatrix = glm::inverse(mvMatrix);  //Inverse of model-view matrix for normal transformation
+	glUniformMatrix4fv(mvpMatrixLoc, 1, GL_FALSE, &mvpMatrix[0][0]);
+	glUniformMatrix4fv(mvMatrixLoc, 1, GL_FALSE, &mvMatrix[0][0]);
+	glUniformMatrix4fv(norMatrixLoc, 1, GL_TRUE, &invMatrix[0][0]);  //Use transpose matrix here
 	glUniform4fv(eyeLoc, 1, &eyePos[0]); // map value inside shader
+
+	/* Water texture */
+	glUniform1f(glGetUniformLocation(program, "water_level"), water_level);
+
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glBindVertexArray(vaoID);
@@ -292,8 +371,8 @@ void
 keyEvents(unsigned char key, int x, int y)
 {
 	/* Exit program */
-    if (key == QUIT) exit(EXIT_SUCCESS);
-	else if (key == ESC) exit(EXIT_SUCCESS);
+    // if (key == QUIT) exit(EXIT_SUCCESS);
+	if (key == ESC) exit(EXIT_SUCCESS);
 
 	/* Zoom */
 	if (key == '+') 
@@ -313,6 +392,36 @@ keyEvents(unsigned char key, int x, int y)
 	/* Change Textures */
 	if (key == '1') loadTextures(MT_COOK);
 	if (key == '2') loadTextures(MT_RUAPEHU);
+
+
+	/* Water Level */
+	if (key == 'a')  // dec.
+	{
+		water_level -= 0.1;
+		if (water_level < 0)
+			water_level = 0;
+	}
+	else if (key == 'q')  // inc.
+	{
+		water_level += 0.1;
+		if (water_level > 8)
+			water_level = 8;
+	}
+
+
+	/* Snow Level */
+	if (key == 's')  // dec.
+	{
+		snow_level -= 0.1;
+		if (snow_level < 4)
+			snow_level = 4;
+	}
+	else if (key == 'w')  // inc.
+	{
+		snow_level += 0.1;
+		if (snow_level > 10)
+			snow_level = 10;
+	}
 
 
     glutPostRedisplay();  

@@ -11,7 +11,7 @@ Computer Graphics (2021);  University of Canterbury
 **Outline:**
 * Moving Camera around scene
   * Changing tessalation level 
-* 3 Textures
+* 3 Textures - blending
   * Water
   * Snow
   * Grass
