@@ -8,7 +8,7 @@
 
 
 # App Name
-TARGET = Terrain
+TARGET = TerrainModel
 
 # Definitions
 CC = g++ $(INCLUDES)
@@ -63,5 +63,5 @@ clean:
 	@echo $(PRINT_BEGIN)
 
 program: 
-	start "" $(TARGET).exe
+	$(TARGET).exe
 	
