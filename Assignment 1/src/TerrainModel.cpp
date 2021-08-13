@@ -14,9 +14,9 @@
  * 				The Keys can be found in the report and/or the README 
  * 
  * SOURCES:
- * 			-
- * 			-
- * 			-
+ * 			- height maps for lab.
+ * 			- mesh models from https://www.textures.com/library
+ * 			- JPG to TGA converter https://www.freeconvert.com/jpg-to-tga
  * 
 ***************************************************************************************************/
 
@@ -34,13 +34,19 @@
 using namespace std;
 
 
-// ASCII Keys
+/* ASCII Keys */
 #define QUIT    'q'
 #define SPACE   0x20
 #define ESC     0x1B
 
-#define NUM_TEXTURES 2
 
+/* Texture defines */
+#define    NUM_TEXTURES             3
+
+#define    TEX_ID_HEIGHT_MAP        0
+#define    TEX_ID_WATER             1
+#define    TEX_ID_GRASS             2
+#define    TEX_ID_SNOW              3
 
 typedef enum
 {
@@ -75,8 +81,8 @@ generateData()
 {
 	
 	int indx, start;
-	//verts array
-	for(int i = 0; i < 10; i++)   // 100 vertices on a 10x10 grid
+	// verts array
+	for (int i = 0; i < 10; i++)   // 100 vertices on a 10x10 grid
 	{ 
 		for(int j = 0; j < 10; j++)
 		{
@@ -87,8 +93,8 @@ generateData()
 		}
 	}
 
-	//elems array
-	for(int i = 0; i < 9; i++)
+	// elems array
+	for (int i = 0; i < 9; i++)
 	{
 		for(int j = 0; j < 9; j++)
 		{
@@ -109,17 +115,17 @@ loadTextures(Terrain terrain)
     glGenTextures(NUM_TEXTURES, texID);  /* Generate texture ID */
 
 
-	// Load either MtCook.tga or MtRuapehu.tga
+	/* Load Height Maps */
     glActiveTexture(GL_TEXTURE0);  /* Texture unit 0 */
-    glBindTexture(GL_TEXTURE_2D, texID[0]);
+    glBindTexture(GL_TEXTURE_2D, texID[TEX_ID_HEIGHT_MAP]);
 	
 	switch (terrain) 
 	{
 		case MT_COOK:
-			loadTGA("./src/height_maps/MtCook.tga");  /* Height Map */
+			loadTGA("./src/height_maps/MtCook.tga"); 
 			break;
 		case MT_RUAPEHU:
-			loadTGA("./src/height_maps/MtRuapehu.tga");  /* Height Map */
+			loadTGA("./src/height_maps/MtRuapehu.tga");  
 			break;
 	}
 
@@ -127,22 +133,38 @@ loadTextures(Terrain terrain)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 
+	/* Load Water Texture */
+    glActiveTexture(GL_TEXTURE1);  /* Texture unit 1 */
+    glBindTexture(GL_TEXTURE_2D, texID[TEX_ID_WATER]);
 
-	// Load either MtCook.tga or MtRuapehu.tga
-    glActiveTexture(GL_TEXTURE1);  /* Texture unit 0 */
-    glBindTexture(GL_TEXTURE_2D, texID[1]);
-
-	// Load Moss Texture
-	loadTGA("./src/mesh_models/Moss.tga");
+	loadTGA("./src/mesh_models/Water.tga");
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 
-	// glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+	/* Load Grass Texture */
+    glActiveTexture(GL_TEXTURE2);  /* Texture unit 2 */
+    glBindTexture(GL_TEXTURE_2D, texID[TEX_ID_GRASS]);
+
+	loadTGA("./src/mesh_models/Grass.tga");
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+	/* Load Snow Texture */
+    glActiveTexture(GL_TEXTURE3);  /* Texture unit 3 */
+    glBindTexture(GL_TEXTURE_2D, texID[TEX_ID_SNOW]);
+
+	loadTGA("./src/mesh_models/Snow.tga");
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 }
 
 
+// Change view - via spacebar
 void 
 Load_View(void)
 {
@@ -154,7 +176,7 @@ Load_View(void)
 
 
 
-//Loads a shader file and returns the reference to a shader object
+// Loads a shader file and returns the reference to a shader object
 GLuint 
 loadShader(GLenum shaderType, string filename)
 {
@@ -187,21 +209,20 @@ loadShader(GLenum shaderType, string filename)
 
 
 //Initialise the shader program, create and load buffer data
-void initialise()
+void 
+initialise()
 {
-	// glm::mat4 proj, view;   //Projection and view matrices
-
-	//--------Load terrain height map-----------
+	/* Load Textures */
 	loadTextures(MT_COOK);
 
-	//--------Load shaders----------------------
+	/* Load shaders */
 	GLuint shaderv = loadShader(GL_VERTEX_SHADER, "./src/shaders/Terrain.vert");
 	GLuint shaderf = loadShader(GL_FRAGMENT_SHADER, "./src/shaders/Terrain.frag");
 	GLuint shaderc = loadShader(GL_TESS_CONTROL_SHADER, "./src/shaders/Terrain.cont");
 	GLuint shadere = loadShader(GL_TESS_EVALUATION_SHADER, "./src/shaders/Terrain.eval");
 	// GLuint shaderg = loadShader(GL_GEOMETRY_SHADER, "./src/shaders/Terrain.geom");
 
-	//--------Attach shaders---------------------
+	/* Attach shaders */
 	program = glCreateProgram();
 	glAttachShader(program, shaderv);
 	glAttachShader(program, shaderf);
@@ -226,7 +247,6 @@ void initialise()
 
 
 	/* Mapping elements for shader's use */
-
 	mvpMatrixLoc = glGetUniformLocation(program, "mvpMatrix");
 	mvMatrixLoc = glGetUniformLocation(program, "mvMatrix");
 	norMatrixLoc = glGetUniformLocation(program, "norMatrix");
@@ -236,24 +256,22 @@ void initialise()
 	eyeLoc = glGetUniformLocation(program, "eyePos");  
 	glUniform1i(eyeLoc, 0);
 
-	// /* Terrain layout */
-	// GLuint tex_map_Loc = glGetUniformLocation(program, "heightMap"); 
-	// glUniform1i(tex_map_Loc, 0);
 
+	/* Pass Height Map texture to Eval. shader */
+	GLuint tex_map_Loc = glGetUniformLocation(program, "heightMap"); 
+	glUniform1i(tex_map_Loc, TEX_ID_HEIGHT_MAP);
 
+	/* Pass Water texture to Frag. shader */
+	GLuint water_Loc = glGetUniformLocation(program, "_tex_water");
+	glUniform1i(water_Loc, TEX_ID_WATER);
 
-	/* Terrain texture */
-	GLuint grass_Loc = glGetUniformLocation(program, "grass");
-	glUniform1i(grass_Loc, 1);
+	/* Pass Grass texture to Frag. shader */
+	GLuint grass_Loc = glGetUniformLocation(program, "_tex_grass");
+	glUniform1i(grass_Loc, TEX_ID_GRASS);
 
-
-
-	// /* Water texture */
-	// glUniform1f(glGetUniformLocation(program, "water_level"), water_level);
-
-	// /* snow texture */
-	// GLuint snow_Loc = glGetUniformLocation(program, "snow_level");
-	// glUniform1i(snow_Loc, 0);
+	/* Pass Grass texture to Frag. shader */
+	GLuint snow_Loc = glGetUniformLocation(program, "_tex_snow");
+	glUniform1i(snow_Loc, TEX_ID_SNOW);
 
 
 	glm::vec4 light = glm::vec4(10.0, 10.0, 10.0, 1.0);
@@ -279,15 +297,6 @@ void initialise()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(0);  // Vertex position
 
-	/* Normals */
-	// 
-
-	// /* Texture Coords */
-	// glBindBuffer(GL_ARRAY_BUFFER, vboID[2]);
-    // glBufferData(GL_ARRAY_BUFFER, 24 * 2 * sizeof(float), texCoord, GL_STATIC_DRAW);  //Texture Coords
-    // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-    // glEnableVertexAttribArray(2);  // texture coords
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elems), elems, GL_STATIC_DRAW);  //Vertex indices
 
@@ -312,7 +321,7 @@ void display()
 	 * centre - (0, 0, cam_pitch)
 	 * up - Orientation of the camera
 	*/
-	glm::mat4 mvMatrix = glm::lookAt( glm::vec3(eyePos.x, eyePos.y, eyePos.z), lookPos, glm::vec3(0.0, 1.0, 0.0)); //view matrix
+	glm::mat4 mvMatrix = glm::lookAt(glm::vec3(eyePos.x, eyePos.y, eyePos.z), lookPos, glm::vec3(0.0, 1.0, 0.0)); //view matrix
 	glm::mat4 mvpMatrix = proj * mvMatrix; // Product matrix
 
 	glm::mat4 invMatrix = glm::inverse(mvMatrix);  //Inverse of model-view matrix for normal transformation
@@ -321,8 +330,11 @@ void display()
 	glUniformMatrix4fv(norMatrixLoc, 1, GL_TRUE, &invMatrix[0][0]);  //Use transpose matrix here
 	glUniform4fv(eyeLoc, 1, &eyePos[0]); // map value inside shader
 
-	/* Water texture */
+	/* Update water level texture, Pass water level to Eval. shader */
 	glUniform1f(glGetUniformLocation(program, "water_level"), water_level);
+
+	/* Update snow texture, Pass snow level to Eval. shader */
+	glUniform1f(glGetUniformLocation(program, "snow_level"), snow_level);
 
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);

@@ -8,7 +8,11 @@ uniform sampler2D heightMap;
 uniform float water_level;
 uniform float snow_level;
 
+/* Send to frag shader */
 out vec2 texCoord;
+flat out int water_level_state;  
+flat out int snow_level_state;  
+
 
 void main()
 {
@@ -32,9 +36,20 @@ void main()
     float height = texture(heightMap, texCoord).r;
     posn.y = height * 10.0;  // Scale
 
-    if (posn.y < water_level) 
+    /* Change water level tex. if below Threshold 1 */
+    water_level_state = 0;
+    if (posn.y < water_level)  
+    {
         posn.y = water_level;
-    
+        water_level_state = 1;
+    }
 
+    /* Change snow level tex. if above Threshold 2 */
+    snow_level_state = 0;
+    if (posn.y > snow_level)  
+    {
+        snow_level_state = 1;
+    }
+    
     gl_Position = mvpMatrix * posn;
 }
