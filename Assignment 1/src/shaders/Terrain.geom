@@ -43,7 +43,7 @@ void main()
      * Ambiant + Diffuse Lighting 
      *  - Smooth shading via using Vertex normals
     */
-    vec4 diffuse = dot(light, normal) * vec4(1);
+    vec4 diffuse = dot(light, normal) * vec4(1);  // https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/shading-normals
     lighting_color = diffuse + vec4(0.3);
 
 
