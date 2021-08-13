@@ -7,6 +7,7 @@ layout (triangle_strip, max_vertices = 3) out;
 uniform mat4 mvpMatrix;
 uniform float water_level;
 uniform float snow_level;
+uniform vec4 light;
 
 /* Send states to Frag. shader */
 flat out int water_level_state;  
@@ -21,36 +22,47 @@ out vec4 lighting_color;
 void main()
 {
     float xmin = -45, xmax = +45, zmin = 0, zmax = -100;
+    vec4 posn[3];
+
+    /* Map water level tex. */
+    for (int i = 0; i < 3; i++) 
+    {
+        posn[i] = gl_in[i].gl_Position;
+        if (posn[i].y < water_level)  // Water level threshold 
+            posn[i].y = water_level;
+    }
 
 
     /* Lighting - Find the normal of the patch */
-    vec3 a = gl_in[1].gl_Position.xyz - gl_in[0].gl_Position.xyz;
-    vec3 b = gl_in[2].gl_Position.xyz - gl_in[0].gl_Position.xyz;
+    vec3 a = posn[1].xyz - posn[0].xyz;
+    vec3 b = posn[2].xyz - posn[0].xyz;
 
-    // vec3 normal = normalize(cross(a, b));
-    
-    // vec3 normal = -normalize(cross(gl_in[1].gl_Position.xyz - gl_in[0].gl_Position.xyz, gl_in[2].gl_Position.xyz - gl_in[0].gl_Position.xyz));
+    vec4 normal = normalize(vec4(cross(a, b), 0));
+
+    /*  
+     * Ambiant + Diffuse Lighting 
+     *  - Smooth shading via using Vertex normals
+    */
+    vec4 diffuse = dot(light, normal) * vec4(1);
+    lighting_color = diffuse + vec4(0.3);
 
 
-
+    /* Texture mapping & Weighting */
     for(int i = 0; i < 3; i++)
     { 
-        vec4 posn = gl_in[i].gl_Position;
-
         /* Texture weighting */
-        if (posn.y < water_level) {
-            posn.y = water_level;  // Flat plane movement
+        if (posn[i].y == water_level)
             tex_weights = vec3(1, 0, 0);    // water
-        } else if (posn.y > snow_level)
+        else if (posn[i].y > snow_level)
             tex_weights = vec3(0, 1, 0);    // snow
         else
             tex_weights = vec3(0, 0, 1);    // grass
 
         /* Mapping texture coords. */
-        tex_coords.s = ((posn.x) - xmin) / (xmax - xmin);
-        tex_coords.t = ((posn.z) - zmin) / (zmax - zmin);
+        tex_coords.s = ((posn[i].x) - xmin) / (xmax - xmin);
+        tex_coords.t = ((posn[i].z) - zmin) / (zmax - zmin);
 
-        gl_Position = mvpMatrix * posn;
+        gl_Position = mvpMatrix * posn[i];
         EmitVertex();
     }
 

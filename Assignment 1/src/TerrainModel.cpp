@@ -58,7 +58,7 @@ typedef enum
 // Globals
 GLuint program;
 GLuint vaoID, texID[NUM_TEXTURES];
-GLuint eyeLoc, levelLoc;
+GLuint eyeLoc, lightLoc;
 GLuint mvpMatrixLoc, mvMatrixLoc, norMatrixLoc;
 float CDR = 3.14159265/180.0;     //Conversion from degrees to rad (required in GLM 0.9.6)
 float verts[100*3];       //10x10 grid (100 vertices)
@@ -256,6 +256,9 @@ initialise()
 	eyeLoc = glGetUniformLocation(program, "eyePos");  
 	glUniform1i(eyeLoc, 0);
 
+	lightLoc = glGetUniformLocation(program, "light");
+	glUniform1i(lightLoc, 0);
+
 
 	/* Pass Height Map texture to Eval. shader */
 	GLuint tex_map_Loc = glGetUniformLocation(program, "heightMap"); 
@@ -274,13 +277,13 @@ initialise()
 	glUniform1i(snow_Loc, TEX_ID_SNOW);
 
 
+	/* Initial scene lighting */
 	glm::vec4 light = glm::vec4(10.0, 10.0, 10.0, 1.0);
 	proj = glm::perspective(20.0f*CDR, 1.0f, 10.0f, 1000.0f);  //perspective projection matrix
 	view = glm::lookAt(glm::vec3(0.0, 5.0, 12.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0)); //view matrix
 	glm::vec4 lightEye = view*light;     //Light position in eye coordinates
 	glUniform4fv(lgtLoc, 1, &lightEye[0]);
 	projView = proj*view;  //Product matrix
-
 
 
 	//---------Load buffer data-----------------------
@@ -323,12 +326,16 @@ void display()
 	*/
 	glm::mat4 mvMatrix = glm::lookAt(glm::vec3(eyePos.x, eyePos.y, eyePos.z), lookPos, glm::vec3(0.0, 1.0, 0.0)); //view matrix
 	glm::mat4 mvpMatrix = proj * mvMatrix; // Product matrix
-
 	glm::mat4 invMatrix = glm::inverse(mvMatrix);  //Inverse of model-view matrix for normal transformation
+	glm::vec4 light = normalize(glm::vec4(50 * sin(angle), 50 * cos(angle), -50, 0)); ////////////////////////////////////////////////////////////// Fix
+	// glm::vec4 light = glm::vec4(10.0, 10.0, 10.0, 1.0);
+
+	/* Mapping Uniform to shaders */
 	glUniformMatrix4fv(mvpMatrixLoc, 1, GL_FALSE, &mvpMatrix[0][0]);
 	glUniformMatrix4fv(mvMatrixLoc, 1, GL_FALSE, &mvMatrix[0][0]);
 	glUniformMatrix4fv(norMatrixLoc, 1, GL_TRUE, &invMatrix[0][0]);  //Use transpose matrix here
 	glUniform4fv(eyeLoc, 1, &eyePos[0]); // map value inside shader
+	glUniform4fv(lightLoc, 1, &light[0]);
 
 	/* Update water level texture, Pass water level to Eval. shader */
 	glUniform1f(glGetUniformLocation(program, "water_level"), water_level);
