@@ -1,7 +1,9 @@
 #version 400
 
 layout(vertices = 4) out;
-uniform vec4 eyePos;
+
+/* Program Uniforms */
+uniform vec4 eyePos;  /* Eye view */
 
 
 void main()
@@ -24,3 +26,4 @@ void main()
     gl_TessLevelInner[0] = level;
     gl_TessLevelInner[1] = level;
 }
+

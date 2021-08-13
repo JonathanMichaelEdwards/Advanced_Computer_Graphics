@@ -2,16 +2,8 @@
 
 layout(quads, equal_spacing, ccw) in;
 
-
-uniform mat4 mvpMatrix;
+/* Program Uniforms */
 uniform sampler2D heightMap;
-uniform float water_level;
-uniform float snow_level;
-
-/* Send to frag shader */
-out vec2 texCoord;
-flat out int water_level_state;  
-flat out int snow_level_state;  
 
 
 void main()
@@ -26,30 +18,16 @@ void main()
     posn = (1-u) * (1-v) * gl_in[0].gl_Position
          +    u  * (1-v) * gl_in[1].gl_Position
          +    u  *    v  * gl_in[2].gl_Position
-         + (1-u) *    v  * gl_in[3].gl_Position;    
+         + (1-u) *    v  * gl_in[3].gl_Position;   
 
+    /* Map texture coords. */
     s = ((posn.x) - xmin) / (xmax - xmin);
     t = ((posn.z) - zmin) / (zmax - zmin);
 
-    texCoord = vec2(s, t);
-    
-    float height = texture(heightMap, texCoord).r;
+    float height = texture(heightMap, vec2(s, t)).r;
     posn.y = height * 10.0;  // Scale
 
-    /* Change water level tex. if below Threshold 1 */
-    water_level_state = 0;
-    if (posn.y < water_level)  
-    {
-        posn.y = water_level;
-        water_level_state = 1;
-    }
 
-    /* Change snow level tex. if above Threshold 2 */
-    snow_level_state = 0;
-    if (posn.y > snow_level)  
-    {
-        snow_level_state = 1;
-    }
-    
-    gl_Position = mvpMatrix * posn;
+    gl_Position = posn;  /* Pass through to geometry shader */
 }
+

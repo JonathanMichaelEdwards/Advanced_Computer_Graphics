@@ -4,7 +4,8 @@
         "sstream": "c",
         "fstream": "cpp",
         "cmath": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "vector": "c"
     },
 
     "actionButtons": {

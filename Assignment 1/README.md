@@ -29,7 +29,7 @@ Computer Graphics (2021);  University of Canterbury
   * Left
   * Right
 * Other Keys
-  *  '+' Move down
+  *  '+' or '=' Move down
   *  '-' Move up
   *  '1' Height Map 1
   *  '2' Height Map 2

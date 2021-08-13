@@ -220,7 +220,7 @@ initialise()
 	GLuint shaderf = loadShader(GL_FRAGMENT_SHADER, "./src/shaders/Terrain.frag");
 	GLuint shaderc = loadShader(GL_TESS_CONTROL_SHADER, "./src/shaders/Terrain.cont");
 	GLuint shadere = loadShader(GL_TESS_EVALUATION_SHADER, "./src/shaders/Terrain.eval");
-	// GLuint shaderg = loadShader(GL_GEOMETRY_SHADER, "./src/shaders/Terrain.geom");
+	GLuint shaderg = loadShader(GL_GEOMETRY_SHADER, "./src/shaders/Terrain.geom");
 
 	/* Attach shaders */
 	program = glCreateProgram();
@@ -228,7 +228,7 @@ initialise()
 	glAttachShader(program, shaderf);
 	glAttachShader(program, shaderc);
 	glAttachShader(program, shadere);
-	// glAttachShader(program, shaderg);
+	glAttachShader(program, shaderg);
 
 	glLinkProgram(program);
 
@@ -262,15 +262,15 @@ initialise()
 	glUniform1i(tex_map_Loc, TEX_ID_HEIGHT_MAP);
 
 	/* Pass Water texture to Frag. shader */
-	GLuint water_Loc = glGetUniformLocation(program, "_tex_water");
+	GLuint water_Loc = glGetUniformLocation(program, "_tex_water_");
 	glUniform1i(water_Loc, TEX_ID_WATER);
 
 	/* Pass Grass texture to Frag. shader */
-	GLuint grass_Loc = glGetUniformLocation(program, "_tex_grass");
+	GLuint grass_Loc = glGetUniformLocation(program, "_tex_grass_");
 	glUniform1i(grass_Loc, TEX_ID_GRASS);
 
 	/* Pass Grass texture to Frag. shader */
-	GLuint snow_Loc = glGetUniformLocation(program, "_tex_snow");
+	GLuint snow_Loc = glGetUniformLocation(program, "_tex_snow_");
 	glUniform1i(snow_Loc, TEX_ID_SNOW);
 
 
@@ -387,7 +387,7 @@ keyEvents(unsigned char key, int x, int y)
 	if (key == ESC) exit(EXIT_SUCCESS);
 
 	/* Zoom */
-	if (key == '+') 
+	if (key == '+' || key == '=') 
 	{
 		eyePos.y -= 0.5;
 		eyePos.w += 0.01;
