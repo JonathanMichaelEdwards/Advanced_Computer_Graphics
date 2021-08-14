@@ -316,7 +316,7 @@ void
 display(void)
 {
 	//Projection and view matrices
-	proj = glm::perspective(30.0f*CDR, 1.25f, 20.0f, 500.0f);  //perspective projection matrix
+	proj = glm::perspective(30.0f*CDR, 1.25f, 20.0f, 1000.0f);  //perspective projection matrix
 
 	/*  lookAt(eye, centre, up)
 	 * eye  - (x_rotate, y_height, z_zoom)
@@ -326,15 +326,14 @@ display(void)
 	glm::mat4 mvMatrix = glm::lookAt(glm::vec3(eyePos.x, eyePos.y, eyePos.z), lookPos, glm::vec3(0.0, 1.0, 0.0)); //view matrix
 	glm::mat4 mvpMatrix = proj * mvMatrix; // Product matrix
 	glm::mat4 invMatrix = glm::inverse(mvMatrix);  //Inverse of model-view matrix for normal transformation
-	glm::vec4 light = normalize(glm::vec4(50 * sin(angle), 50 * cos(angle), -50, 0)); ////////////////////////////////////////////////////////////// Fix -- Why
-	// glm::vec4 light = glm::vec4(10.0, 10.0, 10.0, 1.0);
+	glm::vec4 light = normalize(glm::vec4(-100, 10, 10, 1.0));  /* normalizing light - reduces intensity */
 
 	/* Mapping Uniform to shaders */
 	glUniformMatrix4fv(mvpMatrixLoc, 1, GL_FALSE, &mvpMatrix[0][0]);
 	glUniformMatrix4fv(mvMatrixLoc, 1, GL_FALSE, &mvMatrix[0][0]);
 	glUniformMatrix4fv(norMatrixLoc, 1, GL_TRUE, &invMatrix[0][0]);  //Use transpose matrix here
-	glUniform4fv(eyeLoc, 1, &eyePos[0]); // map value inside shader
-	glUniform4fv(lightLoc, 1, &light[0]);
+	glUniform4fv(eyeLoc, 1, &eyePos[0]);   // map eyePos inside shader
+	glUniform4fv(lightLoc, 1, &light[0]);  // map light source inside shader
 
 	/* Update water level texture, Pass water level to Eval. shader */
 	glUniform1f(glGetUniformLocation(program, "water_level"), water_level);

@@ -10,6 +10,7 @@ in vec2 tex_coords;
 in vec3 tex_weights;
 in vec4 lighting_color;
 in float visibility;
+in float diffTerm_NL; 
 
 out vec4 out_color;
 
@@ -31,7 +32,7 @@ void main()
 	 * Output color of objects, then Mix skycolor with 
 	 * visibility to get fog effect.
 	*/
-	vec4 sky_color = vec4(0.3f, 0.3f, 0.3f, 1.0f);  // grey
+	vec4 sky_color = vec4(0.3f);  // grey
 	out_color = lighting_color * (tex_water + tex_snow + tex_grass);
 	out_color = mix(sky_color, out_color, visibility);  // Final output - Mix Fog
 }

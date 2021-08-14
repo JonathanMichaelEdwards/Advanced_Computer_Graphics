@@ -3,8 +3,13 @@
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 3) out;
 
+layout (location = 1) in vec3 normal[];
+
+
 /* Program Uniforms */
 uniform mat4 mvpMatrix;
+uniform mat4 mvMatrix;
+uniform mat4 invMatrix;
 uniform vec4 eyePos;  /* Eye view */
 uniform float water_level;
 uniform float snow_level;
@@ -17,6 +22,7 @@ out vec2 tex_coords;
 out vec3 tex_weights;
 out vec4 lighting_color;
 out float visibility;
+// out float diffTerm_NL; 
 
 #define DENSITY   0.05
 #define GRADIENT  1
@@ -40,20 +46,42 @@ void main()
     vec3 b = posn[2].xyz - posn[0].xyz;
     vec4 normal_f = normalize(vec4(cross(a, b), 0));
 
+    // vec3 p;
+    // p.x = (posn[0].x + posn[1].x + posn[2].x) / 3;
+    // p.y = (posn[0].y + posn[1].y + posn[2].y) / 3;
+    // p.z = (posn[0].z + posn[1].z + posn[2].z) / 3;
+
+    // vec4 normal_v = normalize(vec4(p, 1));
+
+
+    // vec4 posnEye = mvMatrix * posn;
+    // vec4 lgtVec = normalize(light_pos - eyePos); 
+
+
     /* Ambiant + Diffuse Lighting - Toggle smoothness */
     vec4 diffuse;
     if (lighting_state == 1)
         diffuse = dot(light_pos, normal_f) * vec4(1);    
     else
-        diffuse = vec4(0); //dot(light, normal_v) * vec4(1);
+        diffuse = vec4(0);
 
     lighting_color = diffuse + vec4(0.3);
+
+
+
+
+
+
+
 
     // vec4 diffuse_f = dot(light, normal_f) * vec4(1);  // https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/shading-normals
     // vec4 diffuse_v = dot(light, normal_v) * vec4(1);
     
     // lighting_color = diffuse_f + vec4(0.3);
     // lighting_color = diffuse_v + vec4(0.3);
+
+
+
 
 
     /* Texture mapping & Weighting */
@@ -77,6 +105,26 @@ void main()
             visibility = clamp(visibility, 0.0f, 1.0f);
         } else
             visibility = 1.0f;
+
+
+        // vec4 posnEye = mvMatrix * posn[i];
+        // vec4 normalEye = invMatrix * vec4(normal[i], 0);
+        // vec4 lgtVec = normalize(light_pos - posnEye); 
+        // vec4 viewVec = normalize(vec4(-posnEye.xyz, 0)); 
+        // vec4 material = vec4(0.0, 1.0, 1.0, 1.0);  // cyan
+        // vec4 ambOut = vec4(0.3);
+        // float diffTerm = max(dot(lgtVec, normalEye), 0);
+        // vec4 diffOut = diffTerm * vec4(1);
+
+        // lighting_color = ambOut + diffOut;
+
+
+        /* Ambiant + Diffuse Lighting - Toggle smoothness */
+        // vec4 diffuse;
+        // if (lighting_state == 1)
+        //     diffuse = dot(light_pos, normal_f) * vec4(1);    
+        // else
+        //     diffuse = dot(light_pos, normal_v) * vec4(1);
 
     
         gl_Position = mvpMatrix * posn[i];
