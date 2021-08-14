@@ -1,29 +1,57 @@
 #version 400
 
-layout(vertices = 4) out;
+layout(vertices = 4) out;  /* Each patch has 4 verticies */
 
 /* Program Uniforms */
 uniform vec4 eyePos;  /* Eye view */
+uniform int cracking_state;
+
+
+const float zmin = 0, zmax = 100;
+
+// Get level from the vertex
+float get_level(float z)
+{
+  return int((z - zmin) * 10.0 / (zmin - zmax)) + int(eyePos.w); 
+}
 
 
 void main()
 {
-    float xmin = -45, xmax = +45, zmin = 0, zmax = -100;
-    vec3 avg = (gl_in[0].gl_Position.xyz
+    vec3 avg_n = (gl_in[0].gl_Position.xyz
                 + gl_in[1].gl_Position.xyz
                 + gl_in[2].gl_Position.xyz
-                + gl_in[3].gl_Position.xyz) * 0.25;
+                + gl_in[3].gl_Position.xyz) / 4 + eyePos.z;
 
-    float dist = distance(vec3(eyePos.x, eyePos.y, eyePos.z), avg);
-    int level = int((dist - zmin) * 5.0 / (zmax - zmin)) + int(eyePos.w) - 20; 
+    float dist = distance(vec3(eyePos.x, eyePos.y, eyePos.z), avg_n);
 
-    gl_out[gl_InvocationID].gl_Position
-      = gl_in[gl_InvocationID].gl_Position;
-    gl_TessLevelOuter[0] = level;
-    gl_TessLevelOuter[1] = level;
-    gl_TessLevelOuter[2] = level;
-    gl_TessLevelOuter[3] = level;
-    gl_TessLevelInner[0] = level;
-    gl_TessLevelInner[1] = level;
+    /* Finding the Average of each vertex - Fixes cracking problem*/
+    float zavg = 0;
+    for (int i = 0; i < 4; i++)
+        zavg += gl_in[i].gl_Position.z / 4 + eyePos.z;
+
+    /* Toggle cracking */
+    float avg;
+    if (cracking_state == 1)
+        avg = zavg;
+    else
+        avg = dist;
+
+
+    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+
+    /* Only need to find the average Vertex level bewtween shared edges */ 
+    gl_TessLevelOuter[0] = get_level(avg);
+    gl_TessLevelOuter[1] = get_level(gl_in[1].gl_Position.z);
+    gl_TessLevelOuter[2] = get_level(avg);
+    gl_TessLevelOuter[3] = get_level(gl_in[3].gl_Position.z);
+    gl_TessLevelInner[0] = gl_TessLevelInner[1] = get_level(dist); // default inner layer
 }
 
+
+// Cracking -- 
+// Cracking was initially an issue, however it was resolved by using the average of the vertices
+// along a given edge, rather than the centre of the patch. Since the vertices are all shared
+// between edges, getting the average will result in the same tessellation level, thus resolving
+// the issue of cracking. This is only true when the vertices are shared between edges, which is
+// true in the terrain program.

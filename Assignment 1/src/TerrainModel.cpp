@@ -71,7 +71,7 @@ bool frame_view = false;
 GLuint water_Loc, snow_Loc;
 float water_level = 3;
 float snow_level = 5;
-int lighting_state = 0;
+int lighting_state, cracking_state, fog_state = 0;
 
 
 
@@ -176,22 +176,6 @@ Frame_View(void)
 }
 
 
-// Change light shading - via 'l'
-void 
-Lighting_Normals(void)
-{
-	// if (!(lighting_state = !lighting_state))
-	// 	lighting_state = true;  // Wire view if true
-	// else 
-	// 	lighting_state = false;
-
-	lighting_state = !lighting_state;
-
-	printf("%d\n", lighting_state);
-}
-
-
-
 // Loads a shader file and returns the reference to a shader object
 GLuint 
 loadShader(GLenum shaderType, string filename)
@@ -265,7 +249,7 @@ initialise(void)
 	mvMatrixLoc = glGetUniformLocation(program, "mvMatrix");
 	norMatrixLoc = glGetUniformLocation(program, "norMatrix");
 	eyeLoc = glGetUniformLocation(program, "eyePos");  
-	lightLoc = glGetUniformLocation(program, "light");
+	lightLoc = glGetUniformLocation(program, "light_pos");
 
 
 	/* Passing Textures to shaders */
@@ -310,7 +294,9 @@ initialise(void)
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glShadeModel(GL_SMOOTH);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
@@ -346,11 +332,17 @@ display(void)
 	/* Update snow texture, Pass snow level to Eval. shader */
 	glUniform1f(glGetUniformLocation(program, "snow_level"), snow_level);
 
-	/* Update lighting normals, Pass snow level to Eval. shader */
+	/* Update lighting normals (i.e. toggle smooth shading), Pass lighting state to Eval. shader */
 	glUniform1i(glGetUniformLocation(program, "lighting_state"), lighting_state);
 
+	/* Update Cracking state, Pass cracking state to Cont. shader */
+	glUniform1i(glGetUniformLocation(program, "cracking_state"), cracking_state);
 
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	/* Update Fog State, Pass fog state to Cont. shader */
+	glUniform1i(glGetUniformLocation(program, "fog_state"), fog_state);
+
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBindVertexArray(vaoID);
 	glDrawElements(GL_PATCHES, 81*4, GL_UNSIGNED_SHORT, NULL);  /* Drawing Patches */
 	glFlush();
@@ -449,8 +441,13 @@ keyEvents(unsigned char key, int x, int y)
 	}
 
 	/* Toggle Lighting Normals - toggle smooth shading */
-	if (key == 'l') Lighting_Normals();
+	if (key == 'l') lighting_state = !lighting_state;
 
+	/* Toggle Cracking*/
+	if (key == 'c') cracking_state = !cracking_state;
+
+	/* Toggle Cracking*/
+	if (key == 'f') fog_state = !fog_state;
 
     glutPostRedisplay();  
 }
@@ -462,9 +459,9 @@ keyEvents(unsigned char key, int x, int y)
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(1000, 800);
-	glutCreateWindow("Terrain");
+	glutCreateWindow("Terrain Model - jme161");
 	glutInitContextVersion (4, 2);
 	glutInitContextProfile ( GLUT_CORE_PROFILE );
 
