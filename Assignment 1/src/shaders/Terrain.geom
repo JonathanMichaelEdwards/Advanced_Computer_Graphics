@@ -5,17 +5,21 @@ layout (triangle_strip, max_vertices = 3) out;
 
 /* Program Uniforms */
 uniform mat4 mvpMatrix;
-uniform mat4 mvMatrix;
-uniform mat4 invMatrix;
+uniform vec4 eyePos;  /* Eye view */
 uniform float water_level;
 uniform float snow_level;
 uniform vec4 light_pos;
 uniform int lighting_state;
+uniform int fog_state;
 
 /* Send to Frag. shader */
 out vec2 tex_coords;
 out vec3 tex_weights;
 out vec4 lighting_color;
+out float visibility;
+
+#define DENSITY   0.05
+#define GRADIENT  1
 
 
 void main()
@@ -31,15 +35,12 @@ void main()
             posn[i].y = water_level;
     }
 
-
     /* Lighting - Find the face normal of the patch */
     vec3 a = posn[1].xyz - posn[0].xyz;
     vec3 b = posn[2].xyz - posn[0].xyz;
     vec4 normal_f = normalize(vec4(cross(a, b), 0));
 
-    /*  
-     * Ambiant + Diffuse Lighting 
-    */
+    /* Ambiant + Diffuse Lighting - Toggle smoothness */
     vec4 diffuse;
     if (lighting_state == 1)
         diffuse = dot(light_pos, normal_f) * vec4(1);    
@@ -53,8 +54,6 @@ void main()
     
     // lighting_color = diffuse_f + vec4(0.3);
     // lighting_color = diffuse_v + vec4(0.3);
-
-
 
 
     /* Texture mapping & Weighting */
@@ -72,20 +71,17 @@ void main()
         tex_coords.s = ((posn[i].x) - xmin) / (xmax - xmin);
         tex_coords.t = ((posn[i].z) - zmin) / (zmax - zmin);
 
+        /* Fog calculations - Fixed Pos.*/
+        if (fog_state == 0) { 
+            visibility = exp(-pow(length(posn[i]*DENSITY), GRADIENT));  // Exponential curve
+            visibility = clamp(visibility, 0.0f, 1.0f);
+        } else
+            visibility = 1.0f;
 
-        // vec4 diffuse;
-        // if (lighting_state == 1)
-        //     diffuse = mvMatrix * posn[i];  
-        // else
-        //     diffuse = vec4(0); //dot(light, normal_v) * vec4(1);
-
-        // lighting_color = diffuse + vec4(0.3);
-
-
+    
         gl_Position = mvpMatrix * posn[i];
         EmitVertex();
     }
-
     EndPrimitive();
 }
 

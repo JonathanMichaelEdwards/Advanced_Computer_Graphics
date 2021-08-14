@@ -67,12 +67,10 @@ glm::mat4 proj, view, projView;  //Matrices
 glm::vec4 eyePos(0.0, 20.0, 30.0, 40.0);  /* scene view (x, y, z, zoom) */
 glm::vec3 lookPos(0.0, 0.0, -60.0);  /* scene view */
 float angle = 0.f;
-bool frame_view = false;
 GLuint water_Loc, snow_Loc;
 float water_level = 3;
 float snow_level = 5;
-int lighting_state, cracking_state, fog_state = 0;
-
+int frame_view, lighting_state, cracking_state, fog_state, sky_color_state = 0;  /* Prg. states */
 
 
 
@@ -80,7 +78,6 @@ int lighting_state, cracking_state, fog_state = 0;
 void 
 generateData()
 {
-	
 	int indx, start;
 	// verts array
 	for (int i = 0; i < 10; i++)   // 100 vertices on a 10x10 grid
@@ -108,6 +105,7 @@ generateData()
 		}
 	}
 }
+
 
 // Loads Textures
 void 
@@ -170,9 +168,21 @@ void
 Frame_View(void)
 {
 	if (!(frame_view = !frame_view))
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  // Wire view if true
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);  // Wire view if true
 	else 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+}
+
+
+// Change sky color - via 'c'
+void 
+Sky_Color(void)
+{
+	/* Sky color toggle update */
+	if (!(sky_color_state = !sky_color_state))
+		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);  /* Sky color is gery - Nice for fog */ 
+	else 
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  /* Sky color is white - Checks cracking */
 }
 
 
@@ -295,9 +305,9 @@ initialise(void)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glShadeModel(GL_SMOOTH);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);  /* Sky color - grey */ 
 }
 
 
@@ -316,7 +326,7 @@ display(void)
 	glm::mat4 mvMatrix = glm::lookAt(glm::vec3(eyePos.x, eyePos.y, eyePos.z), lookPos, glm::vec3(0.0, 1.0, 0.0)); //view matrix
 	glm::mat4 mvpMatrix = proj * mvMatrix; // Product matrix
 	glm::mat4 invMatrix = glm::inverse(mvMatrix);  //Inverse of model-view matrix for normal transformation
-	glm::vec4 light = normalize(glm::vec4(50 * sin(angle), 50 * cos(angle), -50, 0)); ////////////////////////////////////////////////////////////// Fix
+	glm::vec4 light = normalize(glm::vec4(50 * sin(angle), 50 * cos(angle), -50, 0)); ////////////////////////////////////////////////////////////// Fix -- Why
 	// glm::vec4 light = glm::vec4(10.0, 10.0, 10.0, 1.0);
 
 	/* Mapping Uniform to shaders */
@@ -410,7 +420,6 @@ keyEvents(unsigned char key, int x, int y)
 	if (key == '1') loadTextures(MT_COOK);
 	if (key == '2') loadTextures(MT_RUAPEHU);
 
-
 	/* Water Level */
 	if (key == 'a')  // dec.
 	{
@@ -440,6 +449,7 @@ keyEvents(unsigned char key, int x, int y)
 			snow_level = 10;
 	}
 
+
 	/* Toggle Lighting Normals - toggle smooth shading */
 	if (key == 'l') lighting_state = !lighting_state;
 
@@ -448,6 +458,10 @@ keyEvents(unsigned char key, int x, int y)
 
 	/* Toggle Cracking*/
 	if (key == 'f') fog_state = !fog_state;
+
+	/* Toggle Sky color */
+	if (key == 'b') Sky_Color();
+
 
     glutPostRedisplay();  
 }
@@ -459,11 +473,11 @@ keyEvents(unsigned char key, int x, int y)
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_DEPTH);
 	glutInitWindowSize(1000, 800);
 	glutCreateWindow("Terrain Model - jme161");
 	glutInitContextVersion (4, 2);
-	glutInitContextProfile ( GLUT_CORE_PROFILE );
+	glutInitContextProfile(GLUT_CORE_PROFILE);
 
 	if(glewInit() == GLEW_OK)
 	{

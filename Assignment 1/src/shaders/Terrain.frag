@@ -9,6 +9,9 @@ uniform sampler2D _tex_snow_;
 in vec2 tex_coords;
 in vec3 tex_weights;
 in vec4 lighting_color;
+in float visibility;
+
+out vec4 out_color;
 
 
 void main() 
@@ -24,6 +27,12 @@ void main()
 	vec4 tex_grass = _tex_grass * tex_weights.z;
 	
 
-	gl_FragColor = lighting_color * (tex_water + tex_snow + tex_grass);
+	/* 
+	 * Output color of objects, then Mix skycolor with 
+	 * visibility to get fog effect.
+	*/
+	vec4 sky_color = vec4(0.3f, 0.3f, 0.3f, 1.0f);  // grey
+	out_color = lighting_color * (tex_water + tex_snow + tex_grass);
+	out_color = mix(sky_color, out_color, visibility);  // Final output - Mix Fog
 }
 

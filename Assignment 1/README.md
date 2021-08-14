@@ -41,6 +41,7 @@ Computer Graphics (2021);  University of Canterbury
   *  's' Dec. snow level
   *  'f' Toggle fog
   *  'l' Toggle Smooth shading
+  *  'b' Toggles sky color
   
 &nbsp;
 
