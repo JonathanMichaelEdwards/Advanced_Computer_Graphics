@@ -41,7 +41,7 @@ using namespace std;
 
 
 /* Texture defines */
-#define    NUM_TEXTURES             3
+#define    NUM_TEXTURES             4
 
 #define    TEX_ID_HEIGHT_MAP        0
 #define    TEX_ID_WATER             1
