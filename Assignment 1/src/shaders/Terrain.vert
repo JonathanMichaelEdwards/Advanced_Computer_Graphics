@@ -9,8 +9,8 @@ layout (location = 0) in vec4 position;  /* Input in world coordinate */
 // uniform mat4 norMatrix;
 // uniform vec4 lightPos;
 
-out vec2 TexCoord;
-out float diffTerm;
+// out vec2 TexCoord;
+// out float diffTerm;
 
 void main()
 {

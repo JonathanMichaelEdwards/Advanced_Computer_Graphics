@@ -40,7 +40,7 @@ Computer Graphics (2021);  University of Canterbury
   *  'w' Inc. snow level
   *  's' Dec. snow level
   *  'f' Toggle fog
-  *  'g' Toggle Smooth shading
+  *  'l' Toggle Smooth shading
   
 &nbsp;
 

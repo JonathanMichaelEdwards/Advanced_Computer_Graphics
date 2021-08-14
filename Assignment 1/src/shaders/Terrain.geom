@@ -8,10 +8,7 @@ uniform mat4 mvpMatrix;
 uniform float water_level;
 uniform float snow_level;
 uniform vec4 light;
-
-/* Send states to Frag. shader */
-flat out int water_level_state;  
-flat out int snow_level_state;  
+uniform int lighting_state;
 
 /* Send to Frag. shader */
 out vec2 tex_coords;
@@ -33,18 +30,27 @@ void main()
     }
 
 
-    /* Lighting - Find the normal of the patch */
+    /* Lighting - Find the face normal of the patch */
     vec3 a = posn[1].xyz - posn[0].xyz;
     vec3 b = posn[2].xyz - posn[0].xyz;
-
-    vec4 normal = normalize(vec4(cross(a, b), 0));
+    vec4 normal_f = normalize(vec4(cross(a, b), 0));
 
     /*  
      * Ambiant + Diffuse Lighting 
-     *  - Smooth shading via using Vertex normals
     */
-    vec4 diffuse = dot(light, normal) * vec4(1);  // https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/shading-normals
+    vec4 diffuse;
+    if (lighting_state == 1)
+        diffuse = dot(light, normal_f) * vec4(1);    
+    else
+        diffuse = vec4(0);//dot(light, normal_v) * vec4(1);
+
     lighting_color = diffuse + vec4(0.3);
+
+    // vec4 diffuse_f = dot(light, normal_f) * vec4(1);  // https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/shading-normals
+    // vec4 diffuse_v = dot(light, normal_v) * vec4(1);
+    
+    // lighting_color = diffuse_f + vec4(0.3);
+    // lighting_color = diffuse_v + vec4(0.3);
 
 
     /* Texture mapping & Weighting */

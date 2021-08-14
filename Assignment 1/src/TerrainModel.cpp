@@ -71,6 +71,7 @@ bool frame_view = false;
 GLuint water_Loc, snow_Loc;
 float water_level = 3;
 float snow_level = 5;
+int lighting_state = 0;
 
 
 
@@ -164,14 +165,29 @@ loadTextures(Terrain terrain)
 }
 
 
-// Change view - via spacebar
+// Change world space view - via spacebar
 void 
-Load_View(void)
+Frame_View(void)
 {
 	if (!(frame_view = !frame_view))
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  // Wire view if true
 	else 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+
+// Change light shading - via 'l'
+void 
+Lighting_Normals(void)
+{
+	// if (!(lighting_state = !lighting_state))
+	// 	lighting_state = true;  // Wire view if true
+	// else 
+	// 	lighting_state = false;
+
+	lighting_state = !lighting_state;
+
+	printf("%d\n", lighting_state);
 }
 
 
@@ -199,7 +215,6 @@ loadShader(GLenum shaderType, string filename)
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
 		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
 		glGetShaderInfoLog(shader, infoLogLength, NULL, strInfoLog);
-		const char *strShaderType = NULL;
 		cerr <<  "Compile failure in shader: " << strInfoLog << endl;
 		delete[] strInfoLog;
 	}
@@ -207,10 +222,9 @@ loadShader(GLenum shaderType, string filename)
 }
 
 
-
-//Initialise the shader program, create and load buffer data
+// Initialise the shader program, create and load buffer data
 void 
-initialise()
+initialise(void)
 {
 	/* Load Textures */
 	loadTextures(MT_COOK);
@@ -246,20 +260,15 @@ initialise()
 	glUseProgram(program);
 
 
-	/* Mapping elements for shader's use */
+	/* Mapping Uniform elements for shader's use */
 	mvpMatrixLoc = glGetUniformLocation(program, "mvpMatrix");
 	mvMatrixLoc = glGetUniformLocation(program, "mvMatrix");
 	norMatrixLoc = glGetUniformLocation(program, "norMatrix");
-	GLuint lgtLoc = glGetUniformLocation(program, "lightPos");
-
-	/* Motion view */
 	eyeLoc = glGetUniformLocation(program, "eyePos");  
-	glUniform1i(eyeLoc, 0);
-
 	lightLoc = glGetUniformLocation(program, "light");
-	glUniform1i(lightLoc, 0);
 
 
+	/* Passing Textures to shaders */
 	/* Pass Height Map texture to Eval. shader */
 	GLuint tex_map_Loc = glGetUniformLocation(program, "heightMap"); 
 	glUniform1i(tex_map_Loc, TEX_ID_HEIGHT_MAP);
@@ -276,14 +285,6 @@ initialise()
 	GLuint snow_Loc = glGetUniformLocation(program, "_tex_snow_");
 	glUniform1i(snow_Loc, TEX_ID_SNOW);
 
-
-	/* Initial scene lighting */
-	glm::vec4 light = glm::vec4(10.0, 10.0, 10.0, 1.0);
-	proj = glm::perspective(20.0f*CDR, 1.0f, 10.0f, 1000.0f);  //perspective projection matrix
-	view = glm::lookAt(glm::vec3(0.0, 5.0, 12.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0)); //view matrix
-	glm::vec4 lightEye = view*light;     //Light position in eye coordinates
-	glUniform4fv(lgtLoc, 1, &lightEye[0]);
-	projView = proj*view;  //Product matrix
 
 
 	//---------Load buffer data-----------------------
@@ -313,8 +314,10 @@ initialise()
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
+
 // Display function to compute uniform values based on transformation parameters and to draw the scene
-void display()
+void 
+display(void)
 {
 	//Projection and view matrices
 	proj = glm::perspective(30.0f*CDR, 1.25f, 20.0f, 500.0f);  //perspective projection matrix
@@ -342,6 +345,9 @@ void display()
 
 	/* Update snow texture, Pass snow level to Eval. shader */
 	glUniform1f(glGetUniformLocation(program, "snow_level"), snow_level);
+
+	/* Update lighting normals, Pass snow level to Eval. shader */
+	glUniform1i(glGetUniformLocation(program, "lighting_state"), lighting_state);
 
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -406,7 +412,7 @@ keyEvents(unsigned char key, int x, int y)
 	}
 
 	/* Toggle Wireframe view */
-	if (key == SPACE) Load_View();
+	if (key == SPACE) Frame_View();
 
 	/* Change Textures */
 	if (key == '1') loadTextures(MT_COOK);
@@ -441,6 +447,9 @@ keyEvents(unsigned char key, int x, int y)
 		if (snow_level > 10)
 			snow_level = 10;
 	}
+
+	/* Toggle Lighting Normals - toggle smooth shading */
+	if (key == 'l') Lighting_Normals();
 
 
     glutPostRedisplay();  
