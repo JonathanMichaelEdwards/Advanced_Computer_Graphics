@@ -6,7 +6,7 @@
  * 
  * DESCRIPTION:
  *              COSC422 Assessment 1: Computer Graphics (2021);  University of Canterbury
- * 
+ * --
  * 				The tessellation and geometry shader stages of the OpenGL-4 programmable pipeline 
  * 				have found several applications in modelling and rendering of three dimensional objects. 
  * 				In this assignment, you will use these shader stages to generate a terrain model.

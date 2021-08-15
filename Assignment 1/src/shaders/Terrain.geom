@@ -1,10 +1,8 @@
 #version 400
 
 layout (triangles) in;
-layout (triangle_strip, max_vertices = 3) out;
-
-layout (location = 1) in vec3 normal[];
-
+layout (triangle_strip, max_vertices = 3) out;  /* A patch is made of a Quad with two triangles. 
+                                                   A triangle has 3 verticies */
 
 /* Program Uniforms */
 uniform mat4 mvpMatrix;
@@ -22,7 +20,8 @@ out vec2 tex_coords;
 out vec3 tex_weights;
 out vec4 lighting_color;
 out float visibility;
-// out float diffTerm_NL; 
+// out vec4 posn[3];
+// out vec3 vPos;
 
 #define DENSITY   0.05
 #define GRADIENT  1
@@ -32,6 +31,7 @@ void main()
 {
     float xmin = -45, xmax = +45, zmin = 0, zmax = -100;
     vec4 posn[3];
+    vec4 normWorld;
 
     /* Map water level tex. */
     for (int i = 0; i < 3; i++) 
@@ -39,12 +39,25 @@ void main()
         posn[i] = gl_in[i].gl_Position;
         if (posn[i].y < water_level)  // Water level threshold 
             posn[i].y = water_level;
+        
+        normWorld = vec4(eyePos.xyz * normalize(posn[i].xyz), 0.0);
     }
 
-    /* Lighting - Find the face normal of the patch */
+    /* Lighting - Find the face normal of each sub patch */
     vec3 a = posn[1].xyz - posn[0].xyz;
     vec3 b = posn[2].xyz - posn[0].xyz;
+    // vec4 normal_f = normalize(vec4(cross(a, b), 0));
+    // vec4 normal_f = normalize(vec4(cross(dFdx(a), dFdy(b)), 0));
+    
+
+    // Replace vec3 fdx = dFdx(vPos)  by:
+    // vec3 fdx = vec3(dFdx(eyePos.x), dFdx(eyePos.y), dFdx(eyePos.z));
+
+    // Replace vec3 fdy = dFdy(vPos)  by:
+    // vec3 fdy = vec3(dFdy(vPos.x),dFdy(vPos.y),dFdy(vPos.z));
+
     vec4 normal_f = normalize(vec4(cross(a, b), 0));
+
 
     // vec3 p;
     // p.x = (posn[0].x + posn[1].x + posn[2].x) / 3;
@@ -59,11 +72,13 @@ void main()
 
 
     /* Ambiant + Diffuse Lighting - Toggle smoothness */
+    
+
     vec4 diffuse;
-    if (lighting_state == 1)
-        diffuse = dot(light_pos, normal_f) * vec4(1);    
-    else
-        diffuse = vec4(0);
+    // if (lighting_state == 1)
+        diffuse = dot(light_pos, normWorld) * vec4(1);  // diffuse brightness
+    // else
+    //     diffuse = vec4(0);
 
     lighting_color = diffuse + vec4(0.3);
 
@@ -128,6 +143,7 @@ void main()
 
     
         gl_Position = mvpMatrix * posn[i];
+        
         EmitVertex();
     }
     EndPrimitive();
