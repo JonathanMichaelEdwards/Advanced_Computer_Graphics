@@ -18,7 +18,7 @@ out vec4 out_color;  /* Output fragment */
 
 void main() 
 {
-	/* Get color from each texture */
+	/* Get color from each texture times the weight*/
 	vec4 tex_water = texture(_tex_water, tex_coords)  * tex_weights.x;
 	vec4 tex_snow  = texture(_tex_snow,  tex_coords)  * tex_weights.y;
 	vec4 tex_grass = texture(_tex_grass, tex_coords)  * tex_weights.z;
