@@ -4,8 +4,6 @@
 uniform sampler2D _tex_water;
 uniform sampler2D _tex_grass;
 uniform sampler2D _tex_snow;
-uniform vec4 light_pos;
-uniform vec4 eyePos;  /* Eye view */
 
 /* Recieve from Geom. shader */
 in vec2 tex_coords;

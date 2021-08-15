@@ -6,9 +6,9 @@ layout (triangle_strip, max_vertices = 3) out;  /* A patch is made of a Quad wit
 
 /* Program Uniforms */
 uniform mat4 mvpMatrix;
-uniform vec4 eyePos;  /* Eye view */
 uniform float water_level;
 uniform float snow_level;
+uniform float density; /* Fog level */
 uniform vec4 light_pos;
 uniform int lighting_state;
 uniform int fog_state;
@@ -21,8 +21,8 @@ out float visibility;
 
 #define    AMBIANT     vec4(0.3)
 
-#define    DENSITY     0.05
-#define    GRADIENT    1
+#define    DENSITY     0.03
+#define    GRADIENT    1.3
 
 
 void main()
@@ -73,7 +73,7 @@ void main()
 
         /* Fog calculations - Fixed fog position */
         if (fog_state == 0) { 
-            visibility = exp(-pow(length(posn[i] * DENSITY), GRADIENT));  /* Exponential curve */
+            visibility = exp(-pow(length(posn[i] * density), GRADIENT));  /* Exponential curve */
             visibility = clamp(visibility, 0.0, 1.0);  /* Clamp and send to Frag. shader */
         } else
             visibility = 1.0;  /* No fog */

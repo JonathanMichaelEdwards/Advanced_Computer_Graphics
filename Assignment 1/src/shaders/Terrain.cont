@@ -30,7 +30,7 @@ void main()
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
     /* Tess level */ 
-    float level = int((dist - zmin) * 10.0 / (zmin - zmax)) + int(eyePos.w);
+    float level = int((dist - zmin) * 15.0 / (zmin - zmax)) + int(eyePos.w);
 
     gl_TessLevelOuter[0] = level;
     gl_TessLevelOuter[1] = level;

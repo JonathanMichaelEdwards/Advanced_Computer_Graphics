@@ -14,7 +14,7 @@
  * 				The Keys can be found in the report and/or the README 
  * 
  * SOURCES:
- * 			- height maps for lab.
+ * 			- height maps from lab.
  * 			- mesh models from https://www.textures.com/library
  * 			- JPG to TGA converter https://www.freeconvert.com/jpg-to-tga
  * 
@@ -70,6 +70,7 @@ float angle = 0.f;
 GLuint water_Loc, snow_Loc;
 float water_level = 3;
 float snow_level = 5;
+float density = 0.05;  /* Fog level */
 int frame_view, lighting_state, cracking_state, fog_state, sky_color_state = 0;  /* Prg. states */
 
 
@@ -335,11 +336,14 @@ display(void)
 	glUniform4fv(eyeLoc, 1, &eyePos[0]);   // map eyePos inside shader
 	glUniform4fv(lightLoc, 1, &light[0]);  // map light source inside shader
 
-	/* Update water level texture, Pass water level to Eval. shader */
+	/* Update water level texture, Pass water level to Geom. shader */
 	glUniform1f(glGetUniformLocation(program, "water_level"), water_level);
 
-	/* Update snow texture, Pass snow level to Eval. shader */
+	/* Update snow texture, Pass snow level to Geom. shader */
 	glUniform1f(glGetUniformLocation(program, "snow_level"), snow_level);
+
+	/* Update fog level, Pass fog level to Geom. shader */
+	glUniform1f(glGetUniformLocation(program, "density"), density);
 
 	/* Update lighting normals (i.e. toggle smooth shading), Pass lighting state to Eval. shader */
 	glUniform1i(glGetUniformLocation(program, "lighting_state"), lighting_state);
@@ -448,15 +452,33 @@ keyEvents(unsigned char key, int x, int y)
 			snow_level = 10;
 	}
 
+	
+	/* Toggle Fog*/
+	if (key == 'f') fog_state = !fog_state;
+
+	/* Fog Level */
+	if (!fog_state) 
+	{
+		if (key == 'd')  // dec.
+		{
+			density -= 0.001;
+			if (density <  0.03)
+				density =  0.03;
+		}
+		else if (key == 'e')  // inc.
+		{
+			density += 0.001;
+			if (density >  0.07)
+				density =  0.07;
+		}
+	}
+
 
 	/* Toggle Lighting Normals - toggle smooth shading */
 	if (key == 'l') lighting_state = !lighting_state;
 
 	/* Toggle Cracking*/
 	if (key == 'c') cracking_state = !cracking_state;
-
-	/* Toggle Cracking*/
-	if (key == 'f') fog_state = !fog_state;
 
 	/* Toggle Sky color */
 	if (key == 'b') Sky_Color();
