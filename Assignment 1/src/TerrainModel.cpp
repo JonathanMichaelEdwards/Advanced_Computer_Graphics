@@ -268,15 +268,15 @@ initialise(void)
 	glUniform1i(tex_map_Loc, TEX_ID_HEIGHT_MAP);
 
 	/* Pass Water texture to Frag. shader */
-	GLuint water_Loc = glGetUniformLocation(program, "_tex_water_");
+	GLuint water_Loc = glGetUniformLocation(program, "_tex_water");
 	glUniform1i(water_Loc, TEX_ID_WATER);
 
 	/* Pass Grass texture to Frag. shader */
-	GLuint grass_Loc = glGetUniformLocation(program, "_tex_grass_");
+	GLuint grass_Loc = glGetUniformLocation(program, "_tex_grass");
 	glUniform1i(grass_Loc, TEX_ID_GRASS);
 
 	/* Pass Grass texture to Frag. shader */
-	GLuint snow_Loc = glGetUniformLocation(program, "_tex_snow_");
+	GLuint snow_Loc = glGetUniformLocation(program, "_tex_snow");
 	glUniform1i(snow_Loc, TEX_ID_SNOW);
 
 

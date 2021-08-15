@@ -6,8 +6,6 @@ layout (triangle_strip, max_vertices = 3) out;  /* A patch is made of a Quad wit
 
 /* Program Uniforms */
 uniform mat4 mvpMatrix;
-uniform mat4 mvMatrix;
-uniform mat4 invMatrix;
 uniform vec4 eyePos;  /* Eye view */
 uniform float water_level;
 uniform float snow_level;
@@ -20,11 +18,11 @@ out vec2 tex_coords;
 out vec3 tex_weights;
 out vec4 lighting_color;
 out float visibility;
-// out vec4 posn[3];
-// out vec3 vPos;
 
-#define DENSITY   0.05
-#define GRADIENT  1
+#define    AMBIANT     vec4(0.3)
+
+#define    DENSITY     0.05
+#define    GRADIENT    1
 
 
 void main()
@@ -39,64 +37,23 @@ void main()
         posn[i] = gl_in[i].gl_Position;
         if (posn[i].y < water_level)  // Water level threshold 
             posn[i].y = water_level;
-        
-        normWorld = vec4(eyePos.xyz * normalize(posn[i].xyz), 0.0);
     }
 
     /* Lighting - Find the face normal of each sub patch */
     vec3 a = posn[1].xyz - posn[0].xyz;
     vec3 b = posn[2].xyz - posn[0].xyz;
-    // vec4 normal_f = normalize(vec4(cross(a, b), 0));
-    // vec4 normal_f = normalize(vec4(cross(dFdx(a), dFdy(b)), 0));
-    
 
-    // Replace vec3 fdx = dFdx(vPos)  by:
-    // vec3 fdx = vec3(dFdx(eyePos.x), dFdx(eyePos.y), dFdx(eyePos.z));
-
-    // Replace vec3 fdy = dFdy(vPos)  by:
-    // vec3 fdy = vec3(dFdy(vPos.x),dFdy(vPos.y),dFdy(vPos.z));
-
-    vec4 normal_f = normalize(vec4(cross(a, b), 0));
+    vec4 normal = normalize(vec4(cross(a, b), 0));
 
 
-    // vec3 p;
-    // p.x = (posn[0].x + posn[1].x + posn[2].x) / 3;
-    // p.y = (posn[0].y + posn[1].y + posn[2].y) / 3;
-    // p.z = (posn[0].z + posn[1].z + posn[2].z) / 3;
-
-    // vec4 normal_v = normalize(vec4(p, 1));
-
-
-    // vec4 posnEye = mvMatrix * posn;
-    // vec4 lgtVec = normalize(light_pos - eyePos); 
-
-
-    /* Ambiant + Diffuse Lighting - Toggle smoothness */
-    
-
+    /* Ambiant + Diffuse Lighting - Toggle between Ambiant & Diffuse */
     vec4 diffuse;
-    // if (lighting_state == 1)
-        diffuse = dot(light_pos, normWorld) * vec4(1);  // diffuse brightness
-    // else
-    //     diffuse = vec4(0);
+    if (lighting_state == 0)
+        diffuse = dot(light_pos, normal) * vec4(1);  // diffuse brightness
+    else
+        diffuse = vec4(0);
 
-    lighting_color = diffuse + vec4(0.3);
-
-
-
-
-
-
-
-
-    // vec4 diffuse_f = dot(light, normal_f) * vec4(1);  // https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/shading-normals
-    // vec4 diffuse_v = dot(light, normal_v) * vec4(1);
-    
-    // lighting_color = diffuse_f + vec4(0.3);
-    // lighting_color = diffuse_v + vec4(0.3);
-
-
-
+    lighting_color = AMBIANT + diffuse;
 
 
     /* Texture mapping & Weighting */
@@ -114,32 +71,12 @@ void main()
         tex_coords.s = ((posn[i].x) - xmin) / (xmax - xmin);
         tex_coords.t = ((posn[i].z) - zmin) / (zmax - zmin);
 
-        /* Fog calculations - Fixed Pos.*/
+        /* Fog calculations - Fixed fog position */
         if (fog_state == 0) { 
-            visibility = exp(-pow(length(posn[i]*DENSITY), GRADIENT));  // Exponential curve
-            visibility = clamp(visibility, 0.0f, 1.0f);
+            visibility = exp(-pow(length(posn[i] * DENSITY), GRADIENT));  /* Exponential curve */
+            visibility = clamp(visibility, 0.0, 1.0);  /* Clamp and send to Frag. shader */
         } else
-            visibility = 1.0f;
-
-
-        // vec4 posnEye = mvMatrix * posn[i];
-        // vec4 normalEye = invMatrix * vec4(normal[i], 0);
-        // vec4 lgtVec = normalize(light_pos - posnEye); 
-        // vec4 viewVec = normalize(vec4(-posnEye.xyz, 0)); 
-        // vec4 material = vec4(0.0, 1.0, 1.0, 1.0);  // cyan
-        // vec4 ambOut = vec4(0.3);
-        // float diffTerm = max(dot(lgtVec, normalEye), 0);
-        // vec4 diffOut = diffTerm * vec4(1);
-
-        // lighting_color = ambOut + diffOut;
-
-
-        /* Ambiant + Diffuse Lighting - Toggle smoothness */
-        // vec4 diffuse;
-        // if (lighting_state == 1)
-        //     diffuse = dot(light_pos, normal_f) * vec4(1);    
-        // else
-        //     diffuse = dot(light_pos, normal_v) * vec4(1);
+            visibility = 1.0;  /* No fog */
 
     
         gl_Position = mvpMatrix * posn[i];
