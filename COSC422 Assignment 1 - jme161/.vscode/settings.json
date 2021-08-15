@@ -1,0 +1,31 @@
+{
+    "files.associations": {
+        "*.h": "c",
+        "sstream": "c",
+        "fstream": "cpp",
+        "cmath": "cpp",
+        "new": "cpp",
+        "vector": "c"
+    },
+
+    "actionButtons": {
+        "defaultColor": "light-grey",
+        "reloadButton": " ",
+        "commands": [
+            {
+                "name": "Clean $(trashcan)",
+                "singleInstance": true,
+                "command": "make clean",
+            }, {
+                "name": "Build $(checklist)",
+                "singleInstance": true,
+                "command": "make",
+            }, {
+                "name": "Program $(arrow-right)",
+                "singleInstance": true,
+                "command": "make program",
+            }
+        ]
+    }
+
+}
