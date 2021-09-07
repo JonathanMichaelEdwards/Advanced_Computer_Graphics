@@ -1,0 +1,27 @@
+#version 400
+layout(quads, equal_spacing, ccw) in;
+uniform mat4 mvpMatrix;
+
+float Bez(int i, float u) 
+{
+	if(i == 0) return (1-u)*(1-u);
+	else if(i == 1) return 2*u*(1-u);
+	else if(i == 2) return u*u;
+	else return 0;
+}
+
+void main()
+{
+	vec4 posn = vec4(0);
+	float u = gl_TessCoord.x;
+	float v = gl_TessCoord.y;
+
+	for(int j = 0; j < 3; j++)
+		for(int i = 0; i < 3; i++)
+			posn += Bez(i, u) * Bez(j, v) * gl_in[3*j+i].gl_Position;
+	
+	// vec3 _posn = normalize(posn.xyz);
+	// posn = vec4(_posn, 1);  // normalising to 1. - Makes a sphere
+
+	gl_Position = mvpMatrix * posn; // clip coords
+}

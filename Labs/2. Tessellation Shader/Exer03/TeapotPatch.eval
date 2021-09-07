@@ -1,0 +1,29 @@
+#version 400
+
+layout(quads, equal_spacing, ccw) in;
+uniform mat4 mvpMatrix;
+
+void main()
+{
+    vec4 posn = vec4(0); 
+    float u = gl_TessCoord.x;
+    float v = gl_TessCoord.y;
+
+    float Au = (1-u) * (1-u) * (1-u);
+    float Bu = 3 * u * (1-u) * (1-u);
+    float Cu = 3 * u * u * (1-u);
+    float Du = u * u * u;
+    float Av = (1-v) * (1-v) * (1-v);
+    float Bv = 3 * v * (1-v) * (1-v);
+    float Cv = 3 * v * v * (1-v);
+    float Dv = v * v * v;
+    
+    // Complete the following expresson for a bi-cubic mapping of the
+    // point (u, v) using patch vertices gl_in[i].gl_Position, i=0..15
+    // The Bernstein polynomials for this mapping are defined above.
+    // See Lec11-Slide26 
+    //posn = 
+   
+    gl_Position = mvpMatrix * posn;
+	
+}

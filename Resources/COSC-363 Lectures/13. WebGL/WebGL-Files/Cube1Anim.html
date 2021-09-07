@@ -1,0 +1,38 @@
+<html>
+	<head>
+		<title>COSC363:Cube1Anim</title>
+		
+		<!--  VERTEX SHADER -->
+		<script id="vertexShader"  type="notjs">
+             precision mediump float;
+             attribute vec3 position;
+			 attribute vec3 color;
+             uniform mat4 mvpMatrix;
+			 varying vec3 oColor;
+
+             void main() {
+				oColor = color;
+                gl_Position = mvpMatrix * vec4(position, 1);
+             }		
+		</script>
+		
+		<!-- FRAGMENT SHADER -->
+		<script id="fragmentShader" type="notjs">
+             precision mediump float;
+			 varying vec3 oColor;
+             void main() {
+                gl_FragColor = vec4(oColor, 1);
+             }
+		</script>
+
+		<script src="js/gl-matrix-min.js" defer></script>
+		<script src="js/Cube1Anim.js" defer></script>
+
+	</head>
+	
+	<body>
+		<canvas id="glCanvas" width = "500" height = "500"></canvas>
+		<p><button id = "demo" onclick="myButtonListener()">Start Animation</button></p>
+	</body>
+</html>
+

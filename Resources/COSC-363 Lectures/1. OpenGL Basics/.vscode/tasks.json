@@ -1,0 +1,26 @@
+{
+    "tasks": [
+        {
+            "label": "New Window",
+            "type": "shell",
+
+            "linux": {
+                "command": "cd Linux && make",
+            },
+
+            "windows": {
+                "command": "cd Windows && make"
+            },
+
+            "presentation": {
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            }
+        }
+    ],
+    "version": "2.0.0"
+}

@@ -1,0 +1,6 @@
+OpenGL4 Core API ReferenceURL:
+	https://www.khronos.org/opengl/wiki/Category:Core_API_Reference
+
+GLSL Datatypes:
+	https://www.khronos.org/opengl/wiki/Data_Type_(GLSL)
+

@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "cmath": "cpp",
+        "iostream": "cpp",
+        "climits": "cpp"
+    },
+
+    // Linux:   g++ -no-pie Teapot.cpp -o Teapot -lGL -lGLU -lglut && ./Teapot
+    // Windows: g++ $fileName -o $fileNameWithoutExt -lOpenGL32 -lGLU32 -lfreeGLUT && $fileNameWithoutExt
+    "code-runner.executorMap": {
+        "cpp": "g++ $fileName -o $fileNameWithoutExt -lOpenGL32 -lGLEW32 -lGLU32 -lfreeGLUT && $fileNameWithoutExt"
+        // "cpp": "g++ $fileName -o $fileNameWithoutExt -lGL -lGLEW -lGLU -lglut && ./$fileNameWithoutExt"
+    },
+}

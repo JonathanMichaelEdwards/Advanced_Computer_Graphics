@@ -1,0 +1,15 @@
+#version 400
+
+layout(vertices = 3) out;  // output path verticies
+
+void main()
+{
+	gl_out[gl_InvocationID].gl_Position
+		= gl_in[gl_InvocationID].gl_Position;
+	gl_TessLevelOuter[0] = 10;
+	gl_TessLevelOuter[1] = 10;
+	gl_TessLevelOuter[2] = 10;
+	gl_TessLevelOuter[3] = 0;  // cannot set to 0 (no display)
+	gl_TessLevelInner[0] = 10;
+	gl_TessLevelInner[1] = 0;  // cannot set to 0 (no display)
+}

@@ -1,0 +1,25 @@
+#version 400
+
+layout(triangles, equal_spacing, ccw) in;
+uniform mat4 mvpMatrix;
+vec4 posn;
+
+void main()
+{
+	float u = gl_TessCoord.x;  // Tessellation coords
+	float v = gl_TessCoord.y;  // Patch vertices
+  float w = gl_TessCoord.z;  // Patch vertices
+
+    // Linear Blending Functions - Pg 17 COSC422
+    // creates posn - 3d point
+    posn = u *  gl_in[0].gl_Position
+		     + v * gl_in[1].gl_Position
+		     + w  * gl_in[2].gl_Position;
+
+
+    vec3 _posn = normalize(posn.xyz);
+    posn = vec4(_posn, 1);
+
+
+	gl_Position = mvpMatrix * posn;  // Clip coords
+}
