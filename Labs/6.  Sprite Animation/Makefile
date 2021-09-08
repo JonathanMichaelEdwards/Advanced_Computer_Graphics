@@ -16,7 +16,7 @@ TARGET = SpriteAnim
 
 # Definitions
 CC = g++ $(INCLUDES)
-CFLAGS = -g -Wall -std=c++11
+CFLAGS = -c -g -Wall -std=c++11
 INCLUDES = -I./include
 DEVIL = -lDevIL -lILU -lILUT
 OPENGL_LIB = -lOpenGL32 -lGLU32 -lfreeGLUT -lGLEW32 $(DEVIL)
@@ -44,7 +44,7 @@ all: clean $(TARGET)
 
 # Compile: create object files from C++ source files
 %.o: $(SOURCES_LOCATION)/%.cpp
-	$(CC) -c -o build/$@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) -o build/$@ $< $(OPENGL_LIB) 
 
 
 # Link: create exe output file from object files
