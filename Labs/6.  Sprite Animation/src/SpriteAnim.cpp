@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <X11/Xmd.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <glm/glm.hpp>
@@ -16,16 +17,20 @@
 #include "Shader.h"
 using namespace std;
 
-const int NUMFRAMES = 14;   //Total number of frames on sprite sheet
+
+#define		NUM_FRAMES		14  /* Total number of frames on sprite sheet */
+
+// const int NUMFRAMES = 14;   //Total number of frames on sprite sheet
 GLuint vaoID, texID;
 int frameX, frameY;       //Frame's position within sprite sheet
 int frameWid, frameHgt;   //Frame's width and height
-float aspectRatio;
+float aspectRatio;        /* Aspect Ratio */
 
 GLuint theProgram;
 GLuint  matrixLoc, texLoc, aspectLoc;  //Locations of uniform variables
 BYTE *imgData;				//sprite frame image
 glm::mat4 projView;
+
 
 
 void loadGLTextures()
@@ -55,29 +60,53 @@ void loadGLTextures()
 
 	//Extract frames from the image and use them as textures
 	//Please remove the following four lines...
-	frameX = 24;      //>>>These variables must be converted into arrays
-	frameY = 200;
-	frameWid = 122;
-	frameHgt = 180;
+	// Pos. 0
+	// frameX = 24; 
+	// frameY = 200;
+	// frameWid = 122;
+	// frameHgt = 180;
+
+	// // Pos. 10
+	// frameX = 398; 
+	// frameY = 28;
+	// frameWid = 155;
+	// frameHgt = 180;
 	
 
 	glGenTextures(1, &texID);    //>>> Modify to generate NUMFRAMES ids.	
 
-	//Use a for-loop for the frames here...
-	//for(int i = 0;  i < NUMFRAMES; i++) {
-	glActiveTexture(GL_TEXTURE0);		     //Texture units. Replace with GL_TEXTURE0+i
-	glBindTexture(GL_TEXTURE_2D, texID);     
-	imgData = new BYTE[frameWid * frameHgt * 3];
-	ilCopyPixels(frameX, frameY, 0, frameWid, frameHgt, 1, IL_RGB, IL_UNSIGNED_BYTE, imgData);
+	////Use a for-loop for the frames here...
+	// //for(int i = 0;  i < NUMFRAMES; i++) {
+	// glActiveTexture(GL_TEXTURE0);		     //Texture units. Replace with GL_TEXTURE0+i
+	// glBindTexture(GL_TEXTURE_2D, texID);     
+	// imgData = new BYTE[frameWid * frameHgt * 3];
+	// ilCopyPixels(frameX, frameY, 0, frameWid, frameHgt, 1, IL_RGB, IL_UNSIGNED_BYTE, imgData);
 
-	aspectRatio = (float)frameWid / (float)frameHgt;
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frameWid, frameHgt, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData);
+	// aspectRatio = (float)frameWid / (float)frameHgt;
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frameWid, frameHgt, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData);
 
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	delete[] imgData;
-	//End for-loop here
+	// glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	// delete[] imgData;
+	// //End for-loop here --------------------------------
+
+
+	for(int i = 0;  i < NUMFRAMES; i++) 
+	{
+		glActiveTexture(GL_TEXTURE0+i);		     /* incr. tex. */
+		glBindTexture(GL_TEXTURE_2D, texID);     
+		imgData = new BYTE[frameWid * frameHgt * 3];
+		ilCopyPixels(frameX, frameY, 0, frameWid, frameHgt, 1, IL_RGB, IL_UNSIGNED_BYTE, imgData);
+
+		aspectRatio = (float)frameWid / (float)frameHgt;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frameWid, frameHgt, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData);
+
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		delete[] imgData;
+	}
 
 	ilBindImage(0);
 	ilDeleteImage(imageID);
@@ -97,7 +126,8 @@ void initialise()
 	aspectLoc  = glGetUniformLocation(program, "aspect");
 
 	glUniform1i(texLoc, 0);
-	glUniform1f(aspectLoc, aspectRatio);
+	// glUniform1f(aspectLoc, aspectRatio)
+	glUniform1f(aspectLoc, NUM_FRAMES, aspectRatio);
 
 
 

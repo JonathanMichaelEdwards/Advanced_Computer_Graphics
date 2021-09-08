@@ -1,25 +1,27 @@
 #  ============================================================================================
 # 
 #  Author:       Jonathan Edwards
-#  Date:         01/09/2021 (V4)
-#  Description:  MinGW Compiles and links all object files to create an exe output 
-#                app for Windows.
+#  Date:         08/09/2021 (V5)
 # 
-#		g++ build/SpriteAnim.o -o SpriteAnim.exe -lOpenGL32 -lGLU32 -lfreeGLUT -lGLEW32 -lDevIL -lILU -lILUT
+#  Description:  Compiles and links all object files to create an output 
+#                app for Linux.
 # 
 #  ============================================================================================
-
 
 
 # App Name
 TARGET = SpriteAnim
 
 # Definitions
-CC = g++ $(INCLUDES)
+CC = g++
 CFLAGS = -c -g -Wall -std=c++11
-INCLUDES = -I./include
-DEVIL = -lDevIL -lILU -lILUT
-OPENGL_LIB = -lOpenGL32 -lGLU32 -lfreeGLUT -lGLEW32 $(DEVIL)
+EXE = -no-pie  # changes (x-libshare -> x-executable)
+
+# Libraries & Includes
+INCLUDES = -I./include -I./usr/include/ -I./usr/local/include/
+OPEN_MESH = -lOpenMeshCore -lOpenMeshTools
+DEVIL = -lIL -lILU -lILUT
+OPENGL_LIB = -lGL -lGLU -lGLEW -lglut
 
 # Generating Object Name
 SOURCES_LOCATION  = ./src
@@ -28,11 +30,11 @@ OBJECTS = $(patsubst $(SOURCES_LOCATION)/%.cpp, %.o, $(SOURCES))
 
 
 # Pretty Printing
-PRINT_BEGIN      = ======================================================================================================================
-PRINT_END        = ====================================================================================================================== & echo. & echo.
-REMOVE_MESSAGE   = --------------------------------------- Removing all objects and executables -----------------------------------------
-LINK_NAN_MESSAGE = ----------------------------------------------- Creating object files ------------------------------------------------
-LINK_OBJ_MESSAGE = -------------------------------------- Linkng object files to create executable ---------------------------------------
+PRINT_BEGIN      = "======================================================================================================================"
+PRINT_END        = "======================================================================================================================\n\n"
+REMOVE_MESSAGE   = "-------------------------------------- Removing all object and executable files --------------------------------------"
+LINK_NAN_MESSAGE = "------------------------------------------ Creating non linked object files ------------------------------------------"
+LINK_OBJ_MESSAGE = "-------------------------------- Linkng all object files to create an executable file --------------------------------"
 COMPLETE_MESSAGE = Succesfully Compiled Program...
 
 
@@ -44,28 +46,29 @@ all: clean $(TARGET)
 
 # Compile: create object files from C++ source files
 %.o: $(SOURCES_LOCATION)/%.cpp
-	$(CC) $(CFLAGS) -o build/$@ $< $(OPENGL_LIB) 
+	$(CC) $(CFLAGS) -o build/$@ $< $(INCLUDES)
 
 
-# Link: create exe output file from object files
+# Link: create output file from object files
 $(TARGET): $(OBJECTS)
 	@echo $(PRINT_END)
 	@echo $(LINK_OBJ_MESSAGE)
 	@echo $(PRINT_BEGIN)
-	$(CC) build/*.o -o $@ $(OPENGL_LIB) 
+	$(CC) $(EXE) build/*.o -o $@ $(OPENGL_LIB) $(DEVIL) $(OPEN_MESH)
 	@echo $(PRINT_END)
 	
 
-# Target: Clean Project
-.PHONY: CleanProject
+# Target: Clean Project.
+.PHONY: cleanProject
 clean:
 	@echo $(REMOVE_MESSAGE)
 	@echo $(PRINT_BEGIN)
-	del /f build\*.o $(TARGET).exe
+	-rm -f build/*.o main
 	@echo $(PRINT_END)
 	@echo $(LINK_NAN_MESSAGE)
 	@echo $(PRINT_BEGIN)
 
+
 program: 
-	$(TARGET).exe
-	
+	./$(TARGET)
+

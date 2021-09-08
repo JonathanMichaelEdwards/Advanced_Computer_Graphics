@@ -10,7 +10,7 @@
 
 
 # App Name
-TARGET = MeshViewer
+TARGET = ###
 
 # Definitions
 CC = g++

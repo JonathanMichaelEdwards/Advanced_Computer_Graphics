@@ -91,7 +91,7 @@ void initialize()
 	float CDR = M_PI / 180.0f;
 
 	//============= Load mesh ==================
-	if (!OpenMesh::IO::read_mesh(mesh, "images/Camel.off"))
+	if (!OpenMesh::IO::read_mesh(mesh, "./models/Camel.off"))
 	{
 		cerr << "Mesh file read error.\n";
 	}
