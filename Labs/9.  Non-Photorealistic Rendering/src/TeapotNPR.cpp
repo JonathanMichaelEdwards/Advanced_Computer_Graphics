@@ -28,7 +28,7 @@ float CDR = 3.14159265/180.0;  //Conversion from degrees to radians
 //Load 3 pencil stroke textures  (*not used*)
 void loadTextures()
 {
-	char* filename[3] = {"PENCIL0.tga", "PENCIL1.tga", "PENCIL2.tga"};
+	char* filename[3] = {"./models/PENCIL0.tga", "./models/PENCIL1.tga", "./models/PENCIL2.tga"};
 	GLuint texID[3];
     glGenTextures(3, texID);
 
@@ -48,7 +48,7 @@ void loadTextures()
 void initialise()
 {
 	int numVert, numNorm;
-	GLuint program = createShaderProg("TeapotNPR.vert", "TeapotNPR.frag");
+	GLuint program = createShaderProg("./src/shaders/TeapotNPR.vert", "./src/shaders/TeapotNPR.frag");
 	matrixLoc1 = glGetUniformLocation(program, "mvMatrix");
 	matrixLoc2 = glGetUniformLocation(program, "mvpMatrix");
 	matrixLoc3 = glGetUniformLocation(program, "norMatrix");
@@ -61,7 +61,7 @@ void initialise()
 	loadTextures();
 
 	//Read teapot data
-	ifile.open("Teapot_low.dat", ios::in);
+	ifile.open("./models/Teapot_low.dat", ios::in);
 
 	ifile >> numVert >> numTri ;	//Number of vertices, number of triangles
 											//Note:  Number of vertices must be equal to number of normals

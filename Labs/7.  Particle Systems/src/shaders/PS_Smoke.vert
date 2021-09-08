@@ -1,16 +1,20 @@
 #version 330
 
-layout (location = 0) in float posX;
+/* 6 VBOs + index */
 layout (location = 1) in float velocity;
 layout (location = 2) in float startTime;
 layout (location = 3) in float angle;
 layout (location = 4) in float mag;
 layout (location = 5) in float omeg;
+layout (location = 6) in float posX;
+
+// layout (location = 7) in float texIndex; // tex index
 
 uniform mat4 mvpMatrix;
 uniform float simt;
 
 const float DMAX = 9;   //Maximum distance of a particle.
+
 
 void main()
 {

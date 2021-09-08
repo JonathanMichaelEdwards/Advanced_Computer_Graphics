@@ -12,7 +12,7 @@ Teapot::Teapot(float size)
 	{
 		ifstream ifile;
 		//Read teapot data
-		ifile.open("Teapot.dat", ios::in);
+		ifile.open("./models/Teapot.dat", ios::in);
 
 		ifile >> numVert >> numNorm >> numTri;	//Number of vertices, number of normals, number of triangles
 												//Note:  Number of vertices must be equal to number of normals

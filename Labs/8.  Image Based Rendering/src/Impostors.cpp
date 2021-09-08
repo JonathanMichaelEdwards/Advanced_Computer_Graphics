@@ -32,7 +32,7 @@ void initialise()
 	teapot = new Teapot(1.0);
 
 // --- Uniform locations ---
-    GLuint program = createShaderProg("Impostors.vert", "Impostors.frag");
+    GLuint program = createShaderProg("./src/shaders/Impostors.vert", "./src/shaders/Impostors.frag");
 	matrixLoc1 = glGetUniformLocation(program, "mvMatrix");    //Suffix 'T' indicates teapot
 	matrixLoc2 = glGetUniformLocation(program, "mvpMatrix");
 	matrixLoc3 = glGetUniformLocation(program, "norMatrix");
@@ -82,10 +82,14 @@ void initialise()
 	GLuint texLoc = glGetUniformLocation(program, "renderTex");  //This is the sampler2D object name in shader
 	glUniform1i(texLoc, 0);
 
+
+
     //========= Create a framebuffer object here ====================
 
 
 	//===============================================================
+
+
 
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);  //use default

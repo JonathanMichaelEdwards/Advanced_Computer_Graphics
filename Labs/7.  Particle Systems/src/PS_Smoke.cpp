@@ -17,44 +17,102 @@
 #include "loadTGA.h"
 using namespace std;
 
-const int NPART = 10;    //number of particles
-GLuint vaoID, texID;
+#define 	NUM_TEX_ID 		4  /* Num of different textures */
+
+
+const int NPART = 1000;    //number of particles
+GLuint vaoID, texID[NUM_TEX_ID];   
 GLuint theProgram;
 GLuint timeLoc;
 float simTime = 0;   //simulation time
 float CDR=3.14159265/180.0;
 
+GLuint texIndex = 0;
+GLuint program;
+GLuint texLoc;//, texLoc1, texLoc2, texLoc3, texLoc4;
+
+
+
 void loadTextures()
 {
-    glGenTextures(1, &texID);
+    glGenTextures(NUM_TEX_ID, texID);  /* Generate 4 texture IDs */
+
+	/* Smoke Tex unit 0 */
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texID);
-    loadTGA("Smoke1.tga");
+    glBindTexture(GL_TEXTURE_2D, texID[0]);
+    loadTGA("./models/Smoke1.tga");
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+	/* Smoke Tex unit 1 */
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texID[1]);
+    loadTGA("./models/Smoke2.tga");
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+	/* Smoke Tex unit 2 */
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, texID[2]);
+    loadTGA("./models/Smoke3.tga");
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+	/* Smoke Tex unit 3 */
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, texID[3]);
+    loadTGA("./models/Smoke4.tga");
+
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 }
 
+
 void initialise()
 {
 	loadTextures();
-	GLuint program = createShaderProg("PS_Smoke.vert", "PS_Smoke.frag");
+	program = createShaderProg("./src/shaders/PS_Smoke.vert", "./src/shaders/PS_Smoke.frag");
 	GLuint matrixLoc = glGetUniformLocation(program, "mvpMatrix");
 	timeLoc = glGetUniformLocation(program, "simt");
 	glUniform1f(timeLoc, 0);
 
-	GLuint texLoc = glGetUniformLocation(program, "smokeTex");
-	glUniform1i(texLoc, 0);
+
+	// /*
+	//  * Uniform smoke texture varibles 
+	//  * - Generate 4 Uniform varibles
+	//  */ 
+	// texLoc1 = glGetUniformLocation(program, "smokeTex1");
+	// glUniform1i(texLoc1, 0);
+
+	// texLoc2 = glGetUniformLocation(program, "smokeTex2");
+	// glUniform1i(texLoc2, 1);
+
+	// texLoc3 = glGetUniformLocation(program, "smokeTex3");
+	// glUniform1i(texLoc3, 2);
+
+	// texLoc4 = glGetUniformLocation(program, "smokeTex4");
+	// glUniform1i(texLoc4, 3);
+	texLoc = glGetUniformLocation(program, "smokeTex");
+
+
 
 	glm::mat4 proj = glm::ortho(-5.0f, 5.0f, -1.0f, 9.0f);  //2D orthographic projection matrix
 	glUniformMatrix4fv(matrixLoc, 1, GL_FALSE, &proj[0][0]);
 
 	float vert[NPART], vel[NPART], startTime[NPART], angle[NPART], mag[NPART], omeg[NPART];
-	float  texindx[NPART];
+	int texindx[NPART];
 
 	//Particle path parameters to be stored in 6 VBOs
 	float t = 0;
 	for(int i = 0; i < NPART; i ++)
 	{
+		texindx[i] = i;  // tex index
 		vert[i] = glm::linearRand(-1.0f, 1.0f);
 		vel[i] = glm::linearRand(1.0f, 3.f);
 		angle[i] = glm::linearRand(-10.0f, 10.0f);
@@ -64,12 +122,14 @@ void initialise()
 		t += 0.1;
 	}
 	
-	GLuint vboID[6];
+	/* 6 VBOs + index */
+	GLuint vboID[7];
 
 	glGenVertexArrays(1, &vaoID);
 
     glBindVertexArray(vaoID);
-    glGenBuffers(6, vboID);
+    // glGenBuffers(6, vboID);
+	glGenBuffers(7, vboID);
 
     glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
@@ -101,6 +161,11 @@ void initialise()
 	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(5);      // omeg
 
+	glBindBuffer(GL_ARRAY_BUFFER, vboID[6]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(texindx), texindx, GL_STATIC_DRAW);
+	glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(6);      // index
+
     glBindVertexArray(0);
 	glDisable(GL_DEPTH_TEST);   //++++++++++++++++++++++
 	glEnable(GL_BLEND);
@@ -111,16 +176,33 @@ void initialise()
 	glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
 }
 
+
 void display()
 {
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glUniform1f(timeLoc, simTime);
 
+	//glUniform1f(glGetUniformLocation(program, "texIndex"), texIndex);
+	// texLoc4 = glGetUniformLocation(program, "smokeTex");
+	if (texIndex < 100)
+		glUniform1i(texLoc, 0);  /* Get Smoke Tex ID 0 */
+	else {
+		glUniform1i(texLoc, 3);  /* Get Smoke Tex ID 3 */
+		if (texIndex > 200)
+			texIndex = 0;
+	}
+
+	texIndex++;
+	printf("%d\n", texIndex);
+	
+
+
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glBindVertexArray(vaoID);
 	glDrawArrays(GL_POINTS, 0, NPART);
-
 	glutSwapBuffers();
+	glFlush();
 }
+
 
 void update(int value)
 {
@@ -128,6 +210,7 @@ void update(int value)
 	glutTimerFunc(50, update, 0);
 	glutPostRedisplay();
 }
+
 
 int main(int argc, char** argv)
 {
