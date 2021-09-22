@@ -13,10 +13,11 @@ layout (location = 6) in int texIndex; // tex index
 uniform mat4 mvpMatrix;
 uniform float simt;
 
-const float DMAX = 9;   //Maximum distance of a particle.
+const float DMAX = 9;   // Maximum distance of a particle.
+
 
 flat out int tex_index;  // send this to the frag. shader 
-
+out float tex_dist;
 
 void main()
 {
@@ -31,8 +32,10 @@ void main()
     nx = -sin((angle+90)*cdr);
     ny =  cos((angle+90)*cdr);
     posn =  vec4(posX + dist*dx + drift*nx, dist*dy + drift*ny, 0.0, 1.0);
+     
+    gl_PointSize = 30 * (dist * (DMAX - dist)) / (DMAX - dist);
+    tex_dist = dist;
 
-    gl_PointSize = 50;
     gl_Position = mvpMatrix * posn;
 
     tex_index = texIndex;

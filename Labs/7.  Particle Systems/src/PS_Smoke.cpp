@@ -20,7 +20,7 @@ using namespace std;
 #define 	NUM_TEX_ID 		4  /* Num of different textures */
 
 
-const int NPART = 1000;    //number of particles
+const int NPART = 5000;    //number of particles
 GLuint vaoID, texID[NUM_TEX_ID];   
 GLuint theProgram;
 GLuint timeLoc;
@@ -83,28 +83,13 @@ void initialise()
 	glUniform1f(timeLoc, 0);
 
 
-	int tex_index[4] = { 0, 1, 2, 3 };
+	int tex_index[4] = { 0, 1, 2, 3 };  // texture ids
 
-	// /*
-	//  * Uniform smoke texture varibles 
-	//  * - Generate 4 Uniform varibles
-	//  */ 
-	// texLoc1 = glGetUniformLocation(program, "smokeTex1");
-	// glUniform1i(texLoc1, 0);
 
-	// texLoc2 = glGetUniformLocation(program, "smokeTex2");
-	// glUniform1i(texLoc2, 1);
-
-	// texLoc3 = glGetUniformLocation(program, "smokeTex3");
-	// glUniform1i(texLoc3, 2);
-
-	// texLoc4 = glGetUniformLocation(program, "smokeTex4");
-	// glUniform1i(texLoc4, 3);
 	texLoc = glGetUniformLocation(program, "smokeTex");
-	glUniform1iv(texLoc, 4, tex_index);
+	glUniform1iv(texLoc, 4, tex_index);  // ( location of var., num., value);
+	// ...v sending vector
 
-// ...v sending vector
-// glUniform1iv( location of var., num., value);
 
 
 	glm::mat4 proj = glm::ortho(-5.0f, 5.0f, -1.0f, 9.0f);  //2D orthographic projection matrix
@@ -113,7 +98,7 @@ void initialise()
 	float vert[NPART], vel[NPART], startTime[NPART], angle[NPART], mag[NPART], omeg[NPART];
 	int texindx[NPART];
 
-	//Particle path parameters to be stored in 6 VBOs
+	// Particle path parameters to be stored in 6 VBOs
 	float t = 0;
 	for(int i = 0; i < NPART; i ++)
 	{
@@ -167,13 +152,11 @@ void initialise()
 	glEnableVertexAttribArray(5);      // omeg
 
 
-
-	// texture indecies - vbo
+	// texture indecies - vbo -- use => layout (location = 6) in int texIndex;
 	glBindBuffer(GL_ARRAY_BUFFER, vboID[6]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(texindx), texindx, GL_STATIC_DRAW);
 	glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(6);      // index
-
 
 
 
@@ -192,21 +175,6 @@ void initialise()
 void display()
 {
 	glUniform1f(timeLoc, simTime);
-
-	//glUniform1f(glGetUniformLocation(program, "texIndex"), texIndex);
-	// texLoc4 = glGetUniformLocation(program, "smokeTex");
-	// if (texIndex < 100)
-	// 	glUniform1i(texLoc, 0);  /* Get Smoke Tex ID 0 */
-	// else {
-	// 	glUniform1i(texLoc, 3);  /* Get Smoke Tex ID 3 */
-	// 	if (texIndex > 200)
-	// 		texIndex = 0;
-	// }
-
-	// texIndex++;
-	//printf("%d\n", texIndex);
-	
-
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glBindVertexArray(vaoID);
