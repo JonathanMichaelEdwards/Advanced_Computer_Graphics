@@ -83,6 +83,8 @@ void initialise()
 	glUniform1f(timeLoc, 0);
 
 
+	int tex_index[4] = { 0, 1, 2, 3 };
+
 	// /*
 	//  * Uniform smoke texture varibles 
 	//  * - Generate 4 Uniform varibles
@@ -99,7 +101,10 @@ void initialise()
 	// texLoc4 = glGetUniformLocation(program, "smokeTex4");
 	// glUniform1i(texLoc4, 3);
 	texLoc = glGetUniformLocation(program, "smokeTex");
+	glUniform1iv(texLoc, 4, tex_index);
 
+// ...v sending vector
+// glUniform1iv( location of var., num., value);
 
 
 	glm::mat4 proj = glm::ortho(-5.0f, 5.0f, -1.0f, 9.0f);  //2D orthographic projection matrix
@@ -112,7 +117,7 @@ void initialise()
 	float t = 0;
 	for(int i = 0; i < NPART; i ++)
 	{
-		texindx[i] = i;  // tex index
+		texindx[i] = (int)glm::linearRand(0.0f, 4.0f);  // tex index (range 0 to 3
 		vert[i] = glm::linearRand(-1.0f, 1.0f);
 		vel[i] = glm::linearRand(1.0f, 3.f);
 		angle[i] = glm::linearRand(-10.0f, 10.0f);
@@ -161,10 +166,17 @@ void initialise()
 	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(5);      // omeg
 
+
+
+	// texture indecies - vbo
 	glBindBuffer(GL_ARRAY_BUFFER, vboID[6]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(texindx), texindx, GL_STATIC_DRAW);
 	glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(6);      // index
+
+
+
+
 
     glBindVertexArray(0);
 	glDisable(GL_DEPTH_TEST);   //++++++++++++++++++++++
@@ -183,16 +195,16 @@ void display()
 
 	//glUniform1f(glGetUniformLocation(program, "texIndex"), texIndex);
 	// texLoc4 = glGetUniformLocation(program, "smokeTex");
-	if (texIndex < 100)
-		glUniform1i(texLoc, 0);  /* Get Smoke Tex ID 0 */
-	else {
-		glUniform1i(texLoc, 3);  /* Get Smoke Tex ID 3 */
-		if (texIndex > 200)
-			texIndex = 0;
-	}
+	// if (texIndex < 100)
+	// 	glUniform1i(texLoc, 0);  /* Get Smoke Tex ID 0 */
+	// else {
+	// 	glUniform1i(texLoc, 3);  /* Get Smoke Tex ID 3 */
+	// 	if (texIndex > 200)
+	// 		texIndex = 0;
+	// }
 
-	texIndex++;
-	printf("%d\n", texIndex);
+	// texIndex++;
+	//printf("%d\n", texIndex);
 	
 
 
