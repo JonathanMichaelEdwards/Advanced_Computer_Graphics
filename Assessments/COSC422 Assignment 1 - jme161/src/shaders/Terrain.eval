@@ -25,7 +25,7 @@ void main()
     t = ((posn.z) - zmin) / (zmax - zmin);
 
     float height = texture(heightMap, vec2(s, t)).r;
-    posn.y = height * 10.0;  // Scale
+    posn.y = height * 10.0;  // Scale - using x, z (same method as y (negh. points) 
 
 
     gl_Position = posn;  /* Pass through to geometry shader */

@@ -1,10 +1,11 @@
-#  ============================================================================
+# ============================================================================================
+# 
 #  Author:       Jonathan Edwards
-#  Date:         21/07/2021 (V2)
-#  Description:  Compiles and links all object files to create an exe output 
-#                app for Windows.
-#  ============================================================================
-
+#  Date:         08/09/2021 (V5)
+# 
+#  Description:  Compiles and links all object files to create an output 
+#                app for Linux.
+#  ============================================================================================
 
 
 # App Name
@@ -13,12 +14,13 @@ TARGET = MeshViewer
 # Definitions
 CC = g++
 CFLAGS = -c -g -Wall -std=c++11
+EXE = -no-pie  # changes (x-libshare -> x-executable)
+
+# Libraries & Includes
 INCLUDES = -I./include -I./usr/include/ -I./usr/local/include/
 OPEN_MESH = -lOpenMeshCore -lOpenMeshTools
 DEVIL = -lIL -lILU -lILUT
-OPENGL_LIB = -lGL -lGLU -lGLEW -lglut $(DEVIL) $(OPEN_MESH)
-exe = -no-pie  # changes (x-libshare -> x-executable)
-
+OPENGL_LIB = -lGL -lGLU -lGLEW -lglut
 
 # Generating Object Name
 SOURCES_LOCATION  = ./src
@@ -46,12 +48,12 @@ all: clean $(TARGET)
 	$(CC) $(CFLAGS) -o build/$@ $< $(INCLUDES)
 
 
-# Link: create exe output file from object files
+# Link: create output file from object files
 $(TARGET): $(OBJECTS)
 	@echo $(PRINT_END)
 	@echo $(LINK_OBJ_MESSAGE)
 	@echo $(PRINT_BEGIN)
-	$(CC) $(exe) build/*.o -o $@ $(OPENGL_LIB) 
+	$(CC) $(EXE) build/*.o -o $@ $(OPENGL_LIB) $(DEVIL) $(OPEN_MESH)
 	@echo $(PRINT_END)
 	
 
@@ -65,5 +67,7 @@ clean:
 	@echo $(LINK_NAN_MESSAGE)
 	@echo $(PRINT_BEGIN)
 
+
 program: 
 	./$(TARGET)
+
