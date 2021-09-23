@@ -1,10 +1,10 @@
 //  ========================================================================
-//  COSC422: Advanced Computer Graphics (2021);  University of Canterbury.
+//  COSC422: Advanced Computer Graphics (2016);  University of Canterbury.
 //
 //  FILE NAME: Imposotrs.cpp
 //
 //  This program shows the construction of impostors using framebuffer objects
-//  See Ex09.pdf for details.
+//  See Ex08.pdf for details.
 //  ========================================================================
 
 #include <iostream>
@@ -17,6 +17,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Shader.h"
 #include "Teapot.h"
+
 using namespace std;
 
 Teapot* teapot;
@@ -32,7 +33,7 @@ void initialise()
 	teapot = new Teapot(1.0);
 
 // --- Uniform locations ---
-    GLuint program = createShaderProg("./src/shaders/Impostors.vert", "./src/shaders/Impostors.frag");
+    GLuint program = createShaderProg("ImpostorsSoln.vert", "ImpostorsSoln.frag");
 	matrixLoc1 = glGetUniformLocation(program, "mvMatrix");    //Suffix 'T' indicates teapot
 	matrixLoc2 = glGetUniformLocation(program, "mvpMatrix");
 	matrixLoc3 = glGetUniformLocation(program, "norMatrix");
@@ -82,37 +83,28 @@ void initialise()
 	GLuint texLoc = glGetUniformLocation(program, "renderTex");  //This is the sampler2D object name in shader
 	glUniform1i(texLoc, 0);
 
-
     //========= Create a framebuffer object here ====================
-	glGenFramebuffers(1, &fboID);
-	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
+    glGenFramebuffers(1, &fboID);
+    glBindFramebuffer(GL_FRAMEBUFFER, fboID);
 
-	// Attaching a texture object to a FBO:
-	glFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTex, 0); // GL_COLOR_ATTACHMENT0 = attachment point
+    // Bind the texture object to the FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTex, 0);
 
+    // Create the depth buffer
+    GLuint depthBuf;
+    glGenRenderbuffers(1, &depthBuf);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthBuf);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 512, 512);
 
-	// Creating Renderbuffer Objects:
-	GLuint depth_buffer;
-	glGenRenderbuffers(1, &depth_buffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 512, 512);  // wid, hgt => same as texture object
+    // Bind the depth buffer to the FBO
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuf);
 
-	// Attaching a render buffer object to a FBO:
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_buffer);
-	
+    // Set the targets for the fragment output variables
+    GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, drawBuffers);
 
-	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, drawBuffers);
-
-
-	// Checking framebuffer object completeness:
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE)
-		cout << "FBO Error!" << endl;
-
-	//===============================================================
-
-
+	GLenum status =  glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if(status != GL_FRAMEBUFFER_COMPLETE) cout << "FBO Error!" << endl;
 
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);  //use default
@@ -135,20 +127,21 @@ void display()
 
 	glUniformMatrix4fv(matrixLoc1, 1, GL_FALSE, &mvMatrix[0][0]);
 	glUniformMatrix4fv(matrixLoc2, 1, GL_FALSE, &mvpMatrix[0][0]);
-	glUniformMatrix4fv(matrixLoc3, 1, GL_TRUE, &invMatrix[0][0]);
+	glUniformMatrix4fv(matrixLoc3, 1, GL_TRUE, &invMatrix[0][0]);  //Use transpose matrix here
 
 	glUniform1i(passLoc, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, fboID); 
+    glBindFramebuffer(GL_FRAMEBUFFER, fboID); 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	teapot->render();
 	glFlush();
 
 	glUniform1i(passLoc, 1);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindVertexArray(vaoID);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_POINTS, 0, 10);  // 10 points on the default frame buffer
+	glDrawArrays(GL_POINTS, 0, 10);
 	glFlush();
+
 }
 	
 

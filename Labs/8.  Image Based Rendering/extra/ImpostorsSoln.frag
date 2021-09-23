@@ -9,9 +9,9 @@ in vec4 vColour;
 
 void main()
 {
-     if (pass == 0)  // Teapot
-          oColor = vColour;
-     else  // Sprites
-          oColor = texture(renderTex, gl_PointCoord);
+   if(pass == 0)   //Teapot
+     oColor = vColour;
+   else  //Sprites
+     oColor = texture(renderTex, gl_PointCoord);
+   
 }
-

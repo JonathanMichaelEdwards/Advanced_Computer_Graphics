@@ -10,6 +10,7 @@ uniform vec4 lightPos;
 
 out float diffTerm;
 out vec4 phongColor;
+flat out int flag_index;
 
 void main()
 {

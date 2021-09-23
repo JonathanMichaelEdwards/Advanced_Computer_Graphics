@@ -1,12 +1,15 @@
 //  ========================================================================
-//  COSC422: Advanced Computer Graphics (2021);  University of Canterbury.
+//  COSC422: Advanced Computer Graphics (2016);  University of Canterbury.
 //
 //  FILE NAME: TeapotNPR.cpp
 //
 //	The program loads and displays the mesh data for a teapot.
 //  The vertex shader includes code for both transformations and lighting.
 //
-//   See Exer10.pdf for details
+//   See Exer07.pdf for details
+//    Solution with pencil shading and silhouette edges
+//  Swap the comment blocks in fragment shader to create a blending of textures
+//  at shade boundaries.
 //  ========================================================================
 #include <fstream>
 #include <GL/glew.h>
@@ -22,13 +25,12 @@ int angle = 0;
 ifstream ifile;
 unsigned int vaoID;
 int numTri;
-float CDR = 3.14159265/180.0;  //Conversion from degrees to radians
+float CDR = 3.14159265/180.0;
 
-
-//Load 3 pencil stroke textures  (*not used*)
+//Load 3 pencil stroke textures
 void loadTextures()
 {
-	char* filename[3] = {"./models/PENCIL0.tga", "./models/PENCIL1.tga", "./models/PENCIL2.tga"};
+	char* filename[3] = {"PENCIL0.tga", "PENCIL1.tga", "PENCIL2.tga"};
 	GLuint texID[3];
     glGenTextures(3, texID);
 
@@ -44,11 +46,10 @@ void loadTextures()
 	}
 }
 
-
 void initialise()
 {
-	int numVert, numNorm;
-	GLuint program = createShaderProg("./src/shaders/TeapotNPR.vert", "./src/shaders/TeapotNPR.frag");
+	int numVert;
+	GLuint program = createShaderProg("TeapotNPR3_Soln.vert", "TeapotNPR3_Soln.frag");
 	matrixLoc1 = glGetUniformLocation(program, "mvMatrix");
 	matrixLoc2 = glGetUniformLocation(program, "mvpMatrix");
 	matrixLoc3 = glGetUniformLocation(program, "norMatrix");
@@ -61,7 +62,7 @@ void initialise()
 	loadTextures();
 
 	//Read teapot data
-	ifile.open("./models/Teapot_low.dat", ios::in);
+	ifile.open("Teapot_low.dat", ios::in);
 
 	ifile >> numVert >> numTri ;	//Number of vertices, number of triangles
 											//Note:  Number of vertices must be equal to number of normals
@@ -118,7 +119,7 @@ void initialise()
     glEnableVertexAttribArray(1);  // Vertex normal
 
     delete [] vert;
-    delete [] norm;
+	delete [] norm;
     delete [] elem;
 	delete [] varray;
 	delete [] narray;
@@ -128,21 +129,8 @@ void initialise()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glLineWidth(4.0);
-
-
-	// Silhouette Edges (Two-pass Rendering)
-	glPolygonMode(GL_FRONT, GL_FILL);
-	glDepthFunc(GL_LESS);
-	glCullFace(GL_BACK);
-	glDrawElements(GL_FILL, numTri * 3, GL_UNSIGNED_SHORT, NULL);
-
-	glPolygonMode(GL_BACK, GL_LINE);
-	glDepthFunc(GL_LEQUAL);
-	glCullFace(GL_FRONT);  // cause it to be in wireframe mode
-	glDrawElements(GL_LINE, numTri * 3, GL_UNSIGNED_SHORT, NULL);
 }
 
-//Timer call back function for continuous rotation of the teapot
 void update(int value)
 {
 	angle++;
@@ -151,7 +139,6 @@ void update(int value)
 	glutPostRedisplay();
 }
 
-//The main display function
 void display()
 {
 	float cam_x = 50*sin(angle*CDR);   //camera position
@@ -159,7 +146,7 @@ void display()
 	glm::vec4 light = glm::vec4(30.0, 20.0, 30.0, 1.0);
 	glm::mat4 proj = glm::perspective(10.0f*CDR, 1.0f, 10.0f, 1000.0f);  //perspective projection matrix
 	glm::mat4 view = glm::lookAt(glm::vec3(cam_x, 20.0, cam_z), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0)); //view matrix
-	glm::mat4 mvpMatrix = proj * view;    //The model-view-projection matrix
+	glm::mat4 mvpMatrix = proj * view;   //The model-view-projection matrix
 	glm::vec4 lightEye = view * light;     //Light position in eye coordinates
 	glm::mat4 invMatrix = glm::inverse(view);  //Inverse of model-view matrix for normal transformation
 	glUniformMatrix4fv(matrixLoc1, 1, GL_FALSE, &view[0][0]);
@@ -170,12 +157,19 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBindVertexArray(vaoID);
+	glPolygonMode(GL_FRONT, GL_FILL);
+	glDepthFunc(GL_LESS);
+	glCullFace(GL_BACK);
 	glUniform1i(flagLoc, 0);
     glDrawArrays(GL_TRIANGLES, 0, 3*numTri);
 
+	glPolygonMode(GL_BACK, GL_LINE);
+	glDepthFunc(GL_LEQUAL);
+	glCullFace(GL_FRONT);
+	glUniform1i(flagLoc, 1);
+    glDrawArrays(GL_TRIANGLES, 0, 3*numTri);
 	glFlush();
 }
-
 
 
 int main(int argc, char** argv)
