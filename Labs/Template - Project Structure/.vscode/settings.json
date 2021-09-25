@@ -1,9 +1,4 @@
 {
-    "files.associations": {
-        "*.h": "c",
-        "sstream": "c"
-    },
-
     "actionButtons": {
         "defaultColor": "light-grey",
         "reloadButton": " ",
@@ -23,5 +18,5 @@
             }
         ]
     }
-
 }
+

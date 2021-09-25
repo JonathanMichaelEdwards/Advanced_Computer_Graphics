@@ -9,7 +9,7 @@
 
 
 # App Name
-TARGET = ###
+TARGET = ###.out
 
 # Definitions
 CC = g++
