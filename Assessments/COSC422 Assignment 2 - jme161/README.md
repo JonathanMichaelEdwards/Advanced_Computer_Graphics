@@ -1,5 +1,5 @@
 COSC422 Assessment 2
-----------
+=============
 
 Computer Graphics (2021);  University of Canterbury
 
@@ -20,38 +20,61 @@ Non-Photorealistic Rendering (NPR):
 
 **Basic NPR - 12 Marks**
 1. Use the OpenMesh library.
-2. Include a geometry shader - Highlighting edges.
-   *  The silhouette and crease edges of the model must be highlighted in the output.
-3. 3 different Pencil stroke textures - corresponding to three different shade levels.
-4. Toggle between "Two-tone
- 
-&nbsp;
+2. Include a geometry shader - Computations.
+3. The silhouette and crease edges of the model must be highlighted in the output.
+3. Three different Pencil stroke textures - corresponding to three different shade levels.
+4. Keystrokes described below
 
-**Keys:**
-* Arrow Keys - Moving around the Scene
+
+**Basic Keys:**
+*  Toggle between two-tone rendering and pencil shading
+   *  SpaceBar
+* Arrow Keys - Rotate around model
   * Up
   * Down
   * Left
   * Right
-* Other Keys
-  *  '+' or '=' Move down
-  *  '-' Move up
-  *  '1' Height Map 1
-  *  '2' Height Map 2
-  *  SpaceBar - Toggles between wireframe and textured view
-  *  'c' Toggle cracking
-  *  'q' Inc. water level
-  *  'a' Dec. water level
-  *  'w' Inc. snow level
-  *  's' Dec. snow level
-  *  'f' Toggle fog
-  *  'd' dec. fog density
-  *  'e' Inc. fog density
-  *  'l' Toggle lighting shade
-  *  'b' Toggles sky color
+* Zoom into model
+  *  '+' or '=' or page up
+* Zoom out of model
+  *  '-' or page down 
+*  Wireframe mode
+   *  'f'
+* Exit application
+  * 'Esc'
+
+&nbsp;
+
+**Extra features - 5 Marks**
+1. Vary the thicknesses of silhouette edges and crease edges.
+2. Model selections
+3. Mipmap - stroke density, 3 or 5 textures
+4. Weighting between texture boundaries
+5. Mesh Subdivision - Increase/Decrease mesh detail level
+
+**Extra Keys:**
+
+*  Thicknesses silhouette edges
+   *  'q' - Increase
+   *  'a' - Decrease
+*  Thicknesses crease edges
+   *  'w' - Increase
+   *  's' - Decrease
+*  Selecting models
+   *  '1', '2' or '3'
+*  Toggle between 3 to 5 textures
+   *  'm'
+*  Toggle texture weighting
+   *  't'
+* Mesh Subdivision
+  * 'e' - Increase
+  * 'd' - Decrease
   
 &nbsp;
 
-**Run Program:**
-* On the Makefile Level - Type the command 'make && make program' in the command prompt
+**Compiling & Running Program:**
+* At the makefile level, Type - 'make && make program' in the terminal.
+
+**Debugging in vscode:** 
+* Press F5
 
