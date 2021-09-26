@@ -17,6 +17,9 @@
                 "command": "make program",
             }
         ]
+    },
+    "files.associations": {
+        "ostream": "cpp"
     }
 }
 

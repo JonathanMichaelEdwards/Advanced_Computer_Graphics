@@ -9,7 +9,7 @@
 
 
 # App Name
-TARGET = MeshViewer.out
+TARGET = NPR.out
 
 # Definitions
 CC = g++
