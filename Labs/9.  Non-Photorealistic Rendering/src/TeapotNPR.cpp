@@ -170,22 +170,22 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBindVertexArray(vaoID);
-	//glUniform1i(flagLoc, 0);
-    //glDrawArrays(GL_TRIANGLES, 0, 3*numTri);
+	glUniform1i(flagLoc, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 3*numTri);
 
 
 	// Silhouette Edges (Two-pass Rendering)
-	glPolygonMode(GL_FRONT, GL_FILL);
-	glDepthFunc(GL_LESS);
-	glCullFace(GL_BACK);
-	glUniform1i(flagLoc, 0);      // send first pass flag
-	glDrawArrays(GL_TRIANGLES, 0, 3*numTri);
+	// glPolygonMode(GL_FRONT, GL_FILL);
+	// glDepthFunc(GL_LESS);
+	// glCullFace(GL_BACK);
+	// glUniform1i(flagLoc, 0);      // send first pass flag
+	// glDrawArrays(GL_TRIANGLES, 0, 3*numTri);
 
-	glPolygonMode(GL_BACK, GL_LINE);
-	glDepthFunc(GL_LEQUAL);
-	glCullFace(GL_FRONT);  // cause it to be in wireframe mode
-	glUniform1i(flagLoc, 1);
-	glDrawArrays(GL_TRIANGLES, 0, 3*numTri);
+	// glPolygonMode(GL_BACK, GL_LINE);
+	// glDepthFunc(GL_LEQUAL);
+	// glCullFace(GL_FRONT);  // cause it to be in wireframe mode
+	// glUniform1i(flagLoc, 1);
+	// glDrawArrays(GL_TRIANGLES, 0, 3*numTri);
 	
 	// glDrawElements(GL_TRIANGLES, numTri * 3, GL_UNSIGNED_SHORT, NULL);  // GL_TRIANGLES - primative type
 
