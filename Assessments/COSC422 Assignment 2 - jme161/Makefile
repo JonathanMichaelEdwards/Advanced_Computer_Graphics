@@ -62,7 +62,7 @@ $(TARGET): $(OBJECTS)
 clean:
 	@echo $(REMOVE_MESSAGE)
 	@echo $(PRINT_BEGIN)
-	-rm -f build/*.o main
+	-rm -f build/*.o $(TARGET)
 	@echo $(PRINT_END)
 	@echo $(LINK_NAN_MESSAGE)
 	@echo $(PRINT_BEGIN)

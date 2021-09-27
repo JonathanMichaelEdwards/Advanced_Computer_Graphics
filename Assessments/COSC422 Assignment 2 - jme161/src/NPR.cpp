@@ -40,6 +40,10 @@ GLuint vaoID;
 GLuint mvpMatrixLoc, mvMatrixLoc, norMatrixLoc, lgtLoc, wireLoc, renderer_loc, pencil_blending_loc;
 glm::mat4 view, projView;
 int num_Elems;
+GLuint program;
+
+OpenMesh::Vec3f box;
+float xmin, xmax, ymin, ymax, zmin, zmax;
 
 
 /* Keystroke states */
@@ -48,7 +52,7 @@ bool textures = false;
 bool texture_weighting = false;
 bool renderer = false;
 
-
+float thickness_silhouette = 0.5;
 
 /* ASCII Keys - https://www.techonthenet.com/ascii/chart.php */
 #define 	SPACE   	0x20
@@ -267,7 +271,6 @@ void getBoundingBox(float& xmin, float& xmax, float& ymin, float& ymax, float& z
 // Initialisation function for OpenMesh, shaders and OpenGL
 void initialize()
 {
-	float xmin, xmax, ymin, ymax, zmin, zmax;
 	float CDR = M_PI / 180.0f;
 
 	//============= Load mesh ==================
@@ -281,7 +284,7 @@ void initialize()
 	xc = (xmin + xmax)*0.5f;
 	yc = (ymin + ymax)*0.5f;
 	zc = (zmin + zmax)*0.5f;
-	OpenMesh::Vec3f box = { xmax - xc,  ymax - yc, zmax - zc };
+	box = { xmax - xc,  ymax - yc, zmax - zc };
 	modelScale = 1.0 / box.max();
 
 
@@ -295,7 +298,7 @@ void initialize()
 	GLuint shaderf = loadShader(GL_FRAGMENT_SHADER, "./src/shaders/NPR.frag");
 	
 	/* Attach shaders */
-	GLuint program = glCreateProgram();
+	program = glCreateProgram();
 	glAttachShader(program, shaderv);
 	glAttachShader(program, shaderg);
 	glAttachShader(program, shaderf);
@@ -508,7 +511,7 @@ void initialize()
 	view = glm::lookAt(glm::vec3(0, 0, 4.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0)); //view matrix
 
 	projView = proj * view;
-	glm::vec4 lightEye = light;//view * light;
+	glm::vec4 lightEye = light;//view * light
 	glUniform4fv(lgtLoc, 1, &lightEye[0]);
 
 
@@ -564,13 +567,7 @@ keyEvents (unsigned char key, int x, int y)
 
 	/* Toggle render */
 	if (key == SPACE) 
-	{
 		renderer = !renderer;
-		// if (renderer) 	
-		// 	...  // Pencil shading
-		// else 			
-		// 	...  // Two-tone shading (start)
-	}
 
 
 	/* Toggle Wireframe view */
@@ -587,74 +584,23 @@ keyEvents (unsigned char key, int x, int y)
 
 	// -- Extra keys ---------------------------------
 
-	/* Change Models */
-	// if (key == '1') 
-	// 	...
-	// else if (key == '2')
-	// 	...
-
-	/* Silhoutte edges level */
-	// if (key == 'a')  // dec.
-	// {
-	// 	silhoutte_edge_level -= 0.1;
-	// 	if (silhoutte_edge_level < 0)
-	// 		silhoutte_edge_level = 0;
-	// }
-	// else if (key == 'q')  // inc.
-	// {
-	// 	silhoutte_edge_level += 0.1;
-	// 	if (silhoutte_edge_level > 8)
-	// 		silhoutte_edge_level = 8;
-	// }
-
-
-	/* Crease edges */
-	// if (key == 's')  // dec.
-	// {
-	// 	crease_edge_level -= 0.1;
-	// 	if (crease_edge_level < 4)
-	// 		crease_edge_level = 4;
-	// }
-	// else if (key == 'w')  // inc.
-	// {
-	// 	crease_edge_level += 0.1;
-	// 	if (crease_edge_level > 10)
-	// 		crease_edge_level = 10;
-	// }
-
-
-	/* Toggle textures */
-	// if (key == 'm') 
-	// {
-	// 	textures = !textures;
-	// 	if (textures) 	
-	// 		...  // 5 textures
-	// 	else 			
-	// 		...  // 3 textures (start)
-	// }
-
+	/* Silhoutte & Crease edges level */
+	if (key == 'a')  // dec.
+	{
+		thickness_silhouette -= 0.05;
+		if (thickness_silhouette < 0.3)
+			thickness_silhouette = 0.3;
+	}
+	else if (key == 'q')  // inc.
+	{
+		thickness_silhouette += 0.05;
+		if (thickness_silhouette > 0.8)
+			thickness_silhouette = 0.8;
+	}
 
 	/* Toggle texture blending weighting - for pencil shading */
 	if (key == 't' && renderer) 
-	{
 		texture_weighting = !texture_weighting;
-		// if (texture_weighting) 	
-		// 	...  // weighting off
-		// else 			
-		// 	...  // weighting on - blending
-	}
-
-
-
-	/* Mesh subdivision */
-	// if (key == 'd')  // dec.
-	// {
-
-	// }
-	// else if (key == 'e')  // inc.
-	// {
-
-	// }
 
 
 
@@ -705,6 +651,10 @@ void display()
 		glUniform1i(pencil_blending_loc, 1);  // On
 	else		   
 		glUniform1i(pencil_blending_loc, 0);  // OFF
+
+	
+	/* Thickness of silhouette edge */
+	glUniform1f(glGetUniformLocation(program, "thickness_silhouette"), thickness_silhouette);
 
 	/* -------------------------------------------------------------------------------------------- */
 
