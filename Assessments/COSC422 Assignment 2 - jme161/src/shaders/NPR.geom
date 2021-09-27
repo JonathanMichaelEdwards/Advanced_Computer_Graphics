@@ -18,11 +18,8 @@ uniform vec4 lightPos;
 uniform float tex_min_max[4];
  
 
-in float _normal[TRI_ITR];
-
 /* Outputs to Fragment shader */
 out float diffTerm;  // l.n
-out vec4 lighting_color;
 out vec2 tex_coords;
 
 
@@ -42,13 +39,14 @@ void main()
     vec3 zero_a = posn_eye[2].xyz - posn_eye[0].xyz;
     vec3 zero_b = posn_eye[4].xyz - posn_eye[0].xyz;
 
-    vec4 normal_unit_eye = normalize(vec4(cross(zero_a, zero_b), 0));  // Centre face - normalEye
-    //vec4 normal_unit_eye = norMatrix * normalize(vec4(cross(zero_a, zero_b), 0));  // Centre face - normalEye
-    vec3 light_vect = lightPos.xyz - posn_eye[0].xyz;  // light source vector - light source to the light
+    vec3 normal_unit = normalize(cross(zero_a, zero_b));  // Centre face - normalEye
+    //vec4 normal_unit_eye = norMatrix * normalize(vec4(cross(zero_a, zero_b), 0));  // Centre face - normalEye -- add dark shading
+    vec3 light_vect = normalize(lightPos.xyz - posn_eye[0].xyz);  // light source vector - light source to the light
     
-    diffTerm = dot(light_vect, normal_unit_eye.xyz);  // l.n
+    diffTerm = dot(light_vect, normal_unit);  // l.n
 
-    lighting_color = vec4(0.3) * (diffTerm);
+
+
 
     // vec3 one_a = posn[2].xyz - posn[1].xyz;
     // vec3 one_b = posn[0].xyz - posn[1].xyz;

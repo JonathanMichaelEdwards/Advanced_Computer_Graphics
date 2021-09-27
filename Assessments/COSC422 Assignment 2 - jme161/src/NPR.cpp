@@ -1,19 +1,18 @@
-// OpenMesh models - https://free3d.com/  (use only OBJ format)
-// Models < 50,000 triangles
-
-
-
-//  ========================================================================
-//  COSC422: Advanced Computer Graphics;  University of Canterbury (2021)
-//
-//  FILE NAME: MeshViewer.cpp
-//  Triangle mesh viewer using OpenMesh and OpenGL-4
-//  This program assumes that the mesh consists of only triangles.
-//  The model is scaled and translated to the origin to fit within the view frustum
-//
-//  Use arrow keys to rotate the model
-//  Use 'w' key to toggle between wireframe and solid fill modes
-//  ========================================================================
+/***************************************************************************************************
+ * 
+ * FILE: TerrainModel.cpp
+ * DATE: Due: 11:55pm, Monday, 27 Sept 2021
+ * AUTHOR:  Jonathan Edwards
+ * 
+ * DESCRIPTION:
+ *              COSC422 Assessment 2: Computer Graphics (2021);  University of Canterbury
+ * 
+ * 				The Keys can be found in the report and/or the README 
+ * 
+ * SOURCES:
+ * 			- textures & models from lab and lectures.
+ * 
+***************************************************************************************************/
 
 #define _USE_MATH_DEFINES // for C++  
 #include <iostream>
@@ -322,7 +321,7 @@ void initialize()
 	int num_faces = mesh.n_faces();
 	float* vertPos = new float[num_verts * 3];
 	float* vertNorm = new float[num_verts * 3];
-	num_Elems = num_faces * 6; //////////////////////////////////////////////////////////////////////////////
+	num_Elems = num_faces * 6; 
 
 	short* elems = new short[num_Elems];   // Asumption: Triangle mesh
 	printf("Triangle mesh num. = %d\n", num_Elems);
@@ -503,13 +502,13 @@ void initialize()
 
 
 
-	glm::vec4 light = normalize(glm::vec4(1.0, 1.0, 10.0, 1.0));   /* normalizing light - reduces intensity */
+	glm::vec4 light = normalize(glm::vec4(10.0, 1.0, 50.0, 1.0));   /* normalizing light - reduces intensity */
 	glm::mat4 proj;
 	proj = glm::perspective(60.0f * CDR, 1.0f, 2.0f, 10.0f);  //perspective projection matrix
 	view = glm::lookAt(glm::vec3(0, 0, 4.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0)); //view matrix
 
 	projView = proj * view;
-	glm::vec4 lightEye = view * light;
+	glm::vec4 lightEye = light;//view * light;
 	glUniform4fv(lgtLoc, 1, &lightEye[0]);
 
 
