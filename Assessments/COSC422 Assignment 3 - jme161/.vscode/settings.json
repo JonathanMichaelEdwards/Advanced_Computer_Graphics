@@ -1,0 +1,37 @@
+{
+    "actionButtons": {
+        "defaultColor": "light-grey",
+        "reloadButton": " ",
+        "commands": [
+            {
+                "name": "Clean $(trashcan)",
+                "singleInstance": true,
+                "command": "make clean",
+            }, {
+                "name": "Build $(checklist)",
+                "singleInstance": true,
+                "command": "make",
+            }, {
+                "name": "Program $(arrow-right)",
+                "singleInstance": true,
+                "command": "make program",
+            }
+        ]
+    },
+    "files.associations": {
+        "ostream": "cpp",
+        "*.ipp": "cpp",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "new": "cpp",
+        "mutex": "cpp",
+        "condition_variable": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "initializer_list": "cpp"
+    }
+}
+

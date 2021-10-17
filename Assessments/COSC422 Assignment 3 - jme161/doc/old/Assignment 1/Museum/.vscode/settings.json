@@ -1,0 +1,29 @@
+{
+    "files.associations": {
+        "cmath": "cpp",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp",
+        "iosfwd": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp"
+    },
+    "actionButtons": {
+        "defaultColor": "light-grey",
+        "reloadButton": " ",
+        "commands": [
+            {
+                "name": "Build $(checklist)",
+                "singleInstance": true,
+                "command": "cd Linux && make all",
+            }, {
+                "name": "Run  $(arrow-right)",
+                "singleInstance": true,
+                "command": "cd Linux && make run",
+            }
+        ]
+    }
+}
