@@ -2,7 +2,10 @@
 //  COSC422: Advanced Computer Graphics;  University of Canterbury (2021)
 //
 //  See Ex15_SkeletalAnimation.pdf for details
+//
+//  Motions - https://sites.google.com/a/cgspeed.com/cgspeed/motion-capture
 //  ========================================================================
+
 
 #include <iostream>
 #include <fstream>
@@ -20,8 +23,9 @@ const aiScene* scene = NULL;
 aiVector3D scene_min, scene_max, scene_center;
 float scene_scale;
 bool modelRotn = true;
-int tDuration;       //Animation duration in ticks.
-int currTick = 0;    //current tick
+int period;       //Animation duration in ticks.
+int tick = 0;    //current tick
+int time_step = 50;
 
 // ------A recursive function to traverse scene graph and render each mesh----------
 void render(const aiScene* sc, const aiNode* nd)
@@ -89,10 +93,47 @@ void initialise()
 	gluPerspective(40, 1, 1.0, 500.0);
 
 	//---- Load the model ------
-	scene = aiImportFile("Dance.bvh", aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_Debone);
+	scene = aiImportFile("./src/Dance.bvh", aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_Debone);
 	if (scene == NULL) exit(1);
-	//printSceneInfo(scene);
-	//printTreeInfo(scene->mRootNode);
+    printSceneInfo(scene);
+	printTreeInfo(scene->mRootNode);
+    //printMeshInfo(scene);
+    //printBoneInfo(scene);
+    //printAnimInfo(scene);  //WARNING:  This may generate a lengthy output if the model has animation data
+
+	period = scene->mAnimations[0]->mDuration;
+
+	// aiNode* node = scene->mRootNode;
+	// aiAnimation* anim = scene->mAnimations[0];
+	// aiNodeAnim* chan = anim->mChannels[i]
+
+	    // Store initial mesh data
+    // initData = new meshInit[scene->mNumMeshes];
+    // for (uint m = 0; m < scene->mNumMeshes; m++) {
+    //     aiMesh *mesh = scene->mMeshes[m];
+    //     uint numVert = mesh->mNumVertices;
+    //     (initData + m)->mNumVertices = numVert;
+    //     (initData + m)->mVertices = new aiVector3D[numVert];
+    //     (initData + m)->mNormals = new aiVector3D[numVert];
+    //     for (uint v = 0; v < numVert; v++) {
+    //         (initData + m)->mVertices[v] = mesh->mVertices[v];
+    //         (initData + m)->mNormals[v] = mesh->mNormals[v];
+    //     }
+    // }
+
+	// for (uint m = 0; m < scene->mNumMeshes; m++) {
+    //     aiMesh *mesh = scene->mMeshes[m];
+    //     uint numVert = mesh->mNumVertices;
+    //     m.mNumVertices = numVert;
+    //     m.mVertices = new aiVector3D[numVert];
+    //     m.mNormals = new aiVector3D[numVert];
+    //     for (uint v = 0; v < numVert; v++) {
+    //         m.mVertices[v] = mesh->mVertices[v];
+    //         m.mNormals[v] = mesh->mNormals[v];
+    //     }
+    // }
+
+
 
 	get_bounding_box(scene, &scene_min, &scene_max);
 	scene_center = (scene_min + scene_max) * 0.5f;
@@ -123,6 +164,44 @@ void display()
 	glutSwapBuffers();
 }
 
+// redo
+void updateNodeMatrices(int tick)
+{
+    int index;
+    aiAnimation *anim = scene->mAnimations[0];
+    aiMatrix4x4 matPos, matRot, matProd;
+    aiMatrix3x3 matRot3;
+    aiNode *nd;
+
+    for (uint i = 0; i < anim->mNumChannels; i++) {
+        matPos = aiMatrix4x4(); //Identity
+        matRot = aiMatrix4x4();
+        aiNodeAnim *ndAnim = anim->mChannels[i]; //Channel
+        if (ndAnim->mNumPositionKeys > 1) index = tick;
+        else index = 0;
+        aiVector3D posn = (ndAnim->mPositionKeys[index]).mValue;
+        matPos.Translation(posn, matPos);
+        if (ndAnim->mNumRotationKeys > 1) index = tick;
+        else index = 0;
+        aiQuaternion rotn = (ndAnim->mRotationKeys[index]).mValue;
+        matRot3 = rotn.GetMatrix();
+        matRot = aiMatrix4x4(matRot3);
+        matProd = matPos * matRot;
+        nd = scene->mRootNode->FindNode(ndAnim->mNodeName);
+        nd->mTransformation = matProd;
+    }
+}
+
+//----Timer callback for continuous rotation of the model about y-axis----
+void update(int value)
+{
+	if (tick > period) return;
+	updateNodeMatrices(tick);
+	glutTimerFunc(time_step, update, 0);
+	tick++;
+	glutPostRedisplay();
+}
+
 
 int main(int argc, char** argv)
 {
@@ -133,6 +212,7 @@ int main(int argc, char** argv)
 
 	initialise();
 	glutDisplayFunc(display);
+	glutTimerFunc(time_step, update, 0);
 
 	glutMainLoop();
 	aiReleaseImport(scene);

@@ -180,7 +180,6 @@ void printAnimInfo(const aiScene* scene, int animIndx)
 				aiNodeAnim* ndAnim = anim->mChannels[i];
 				cout << "     Channel " << i << ": nodeName = " << (ndAnim->mNodeName).C_Str()  << " nposkeys = " << ndAnim->mNumPositionKeys << "  nrotKeys = " <<
 					ndAnim->mNumRotationKeys << " nsclKeys = " << ndAnim->mNumScalingKeys << endl;
-
 				for(int k = 0; k < ndAnim->mNumPositionKeys; k++)
 				{
 					aiVectorKey posKey = ndAnim->mPositionKeys[k];    //Note: Does not return a pointer
