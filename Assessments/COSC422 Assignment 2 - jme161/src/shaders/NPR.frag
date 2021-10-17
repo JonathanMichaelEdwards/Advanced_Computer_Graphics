@@ -88,12 +88,12 @@ void main()
     // ---------------------------------------------------------------------------
 
 
-    /// -- Silhouette Edge Identification Levelling ------------------------------
+    // -- Silhouette Edge Identification Levelling ------------------------------
     if (normals[1] < thickness_silhouette && normals[0] > 0)
          outColor = vec4(0.0);
-    else if (normals[2] < thickness_silhouette && normals[2] > 0)
+    else if (normals[2] < thickness_silhouette && normals[0] > 0)
         outColor = vec4(0.0);
-    else if (normals[3] < thickness_silhouette && normals[3] > 0)
+    else if (normals[3] < thickness_silhouette && normals[0] > 0)
         outColor = vec4(0.0);
     // ---------------------------------------------------------------------------
 }

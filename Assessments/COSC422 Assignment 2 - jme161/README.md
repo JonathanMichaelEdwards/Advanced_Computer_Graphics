@@ -35,9 +35,9 @@ Non-Photorealistic Rendering (NPR):
   * Left
   * Right
 * Zoom into model
-  *  '+' or '=' or page up
+  *  page up
 * Zoom out of model
-  *  '-' or page down 
+  *  page down 
 *  Wireframe mode
    *  'f'
 * Exit application
@@ -54,22 +54,12 @@ Non-Photorealistic Rendering (NPR):
 
 **Extra Keys:**
 
-*  Thicknesses silhouette edges
+*  Thicknesses of silhouette & crease edges
    *  'q' - Increase
    *  'a' - Decrease
-*  Thicknesses crease edges
-   *  'w' - Increase
-   *  's' - Decrease
-*  Selecting models
-   *  '1', '2' or '3'
-*  Toggle between 3 to 5 textures
-   *  'm'
-*  Toggle texture weighting
+*  Toggle texture weighting & mip map
    *  't'
-* Mesh Subdivision
-  * 'e' - Increase
-  * 'd' - Decrease
-  
+
 &nbsp;
 
 **Compiling & Running Program:**

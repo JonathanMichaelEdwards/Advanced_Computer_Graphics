@@ -387,7 +387,6 @@ void initialize()
 		elems[indx] = verH2.idx();
 		indx++;
 
-
 		heH = mesh.next_halfedge_handle(heH); 
 
 		verH2 = mesh.from_vertex_handle(heH);  // Vertex B
@@ -397,7 +396,6 @@ void initialize()
 		verH2 = mesh.opposite_he_opposite_vh(heH);    // Vertex D2
 		elems[indx] = verH2.idx();
 		indx++;
-
 
 		heH = mesh.next_halfedge_handle(heH); 
 
