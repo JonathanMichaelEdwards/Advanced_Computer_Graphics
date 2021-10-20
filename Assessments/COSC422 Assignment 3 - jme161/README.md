@@ -12,47 +12,42 @@ Computer Graphics (2021);  University of Canterbury
 
 &nbsp;
 
-# Scene
-* Starts off the same as COSC-363
-* Then when chaos breaks - Employee inside
-  * Manager walks into the Museum
-    * Places a Block back on the shelf
-      * Scene resets - Manager walks back out
-
 ## Tasks
 ### Model Enhancement (7 Marks)
-* Modify *render()* from *SkeletonAnimation.cpp*
-  * Detailed model is the *Manager*, the employee is made of GLUT objects
+* [x] Modify *render()* from *SkeletonAnimation.cpp*
+  * Detailed model is the *Manager*, the employee is just made of GLUT objects
 
 ### Character’s Environment (6 Marks)
-* Simple Enviroment with GLUT objects
-* Using Assessment I - COSC-363 enviroment
+* [x] Simple Enviroment with GLUT objects
+* [x] Using Assessment I - COSC-363 enviroment
   * Building appon
 
 ### Extra Features (4 Marks)
-1. Planar shadows 
+1. [x] Planar shadows 
    * Character model(s) & Scene
-2. Camera motion
+2. [x] Camera motion
    * Moving the camera during the animation
-3. Camera view orientation
+3. [x] Camera view orientation
    * Change the orientation of the camera 
-4.  Physics based motion
-  * Putting a cube back on the shelf
+4. [x] Physics based motion
+     * Manager puts a cube back on the shelf or
+     *  the cannon
+5. [x] Animation looping
 
 &nbsp;
 
 #### Keys
  *  SpaceBar
-    *  ...
-* Arrow Keys
+    *  Fires the cannon
+* Arrow Keys - moving around scene
   * Up
   * Down
   * Left
   * Right
 * Zoom
-  * ...
-*  Wireframe mode
-   *  ...
+  * (+) or (-)
+* D/d - door
+* V/v - view
 * Exit application
   * 'Esc'
 

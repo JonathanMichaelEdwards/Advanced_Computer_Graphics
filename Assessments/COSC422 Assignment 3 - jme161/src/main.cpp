@@ -5,29 +5,29 @@
 // ============================================================================
 
 
-// Standard libaries
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
-// OpenGL libaries
-#include <GL/glut.h>
-
-// Personal libaries
 #include "display.h"
 #include "peripherals.h"
 
 
+
 // Window options
-#define WIDTH 800
-#define HEIGHT 800
-#define WINDOW_POS 10
+#define 	WIDTH 		1000
+#define 	HEIGHT 		1000
+#define 	WINDOW_POS 	10
+
 
 
 const float grey[4] = {0.2, 0.2, 0.2, 1.0};
 const float orange[4]  = {1, 0.5, 0, 1};
 const float white[4]  = {1, 1, 1, 1};
 float mat[4] = { 1.0, 0.75, 0.5, 1.0 };
+
+
+int period = 0;       //Animation duration in ticks.//
+int tick = 0;    //current tick//
+const int time_step = 50;/////////////////////////////////////// Movement 
+
+
 
 /** ------------------------------------------------------------------------------
 //  								Initialize OpenGL
@@ -42,6 +42,18 @@ void initialize(char *pjtPath, char *OS)
 	loadTexture();
 	loadMeshFile("./models/Cannon.off");	
 
+
+	//---- Load model and textures -- anumation ------
+	char file_name[30] = { 0 };
+
+	// sprintf(file_name, "%s/%s", MODEL_PATH_1, MODEL_1);  // formating file path
+	// loadModel(file_name, 0);  // Model - mantalpice
+	
+	sprintf(file_name, "%s/%s", MODEL_PATH_2, MODEL_2);  // formating file path
+	period = loadModel(file_name, aiProcess_Debone);  // Movement
+	// loadGLTextures_devil();
+
+
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_LIGHTING);
@@ -51,6 +63,7 @@ void initialize(char *pjtPath, char *OS)
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHT2);
+	// glEnable(GL_LIGHT3);
 
 	//	Define light's ambient, diffuse, specular properties
 	glLightfv(GL_LIGHT0, GL_AMBIENT, grey);
@@ -73,20 +86,30 @@ void initialize(char *pjtPath, char *OS)
 	glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 30); 
 	glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 90); 
 
+	// //	Define light's ambient, diffuse, specular properties
+	// glLightfv(GL_LIGHT3, GL_AMBIENT, grey);
+	// glLightfv(GL_LIGHT3, GL_DIFFUSE, orange);
+	// glLightfv(GL_LIGHT3, GL_SPECULAR, orange);
+
+
 	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);  
+	// glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);  
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE); 
   
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, mat);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, white);    
-  	glMaterialf(GL_FRONT, GL_SHININESS, 50);
+	// glMaterialfv(GL_FRONT, GL_SPECULAR, white);    
+  	// glMaterialf(GL_FRONT, GL_SHININESS, 50);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);    
+  	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50);
 	
 
 	glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
 	gluPerspective(60., 1., 1., 500.); 
-	// glMatrixMode(GL_MODELVIEW);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	
 		
-	getPath(pjtPath, atoi(OS));
+	// getPath(pjtPath, atoi(OS));   // Error link
 } 
 
 
@@ -102,6 +125,18 @@ void idle(int delay)
 }
 
 
+
+//----Timer callback for continuous rotation of the model about y-axis----
+void update(int value)
+{
+	if (tick > period) tick = 0;
+	updateNodeMatrices(tick);
+	glutTimerFunc(time_step, update, 0);
+	tick++;
+	glutPostRedisplay();
+}
+
+
 // ----------------------------------------------------------------------------
 //         		 Initialize glut window and register call backs
 // ----------------------------------------------------------------------------
@@ -110,15 +145,19 @@ int main(int argc, char *argv[])
 	glutInit(&argc, argv);
    	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(WIDTH, HEIGHT); 
-	glutInitWindowPosition(WINDOW_POS, WINDOW_POS);
-	glutCreateWindow("Museum    FPS: ...");
+	// glutInitWindowPosition(WINDOW_POS, WINDOW_POS);
+	glutCreateWindow("Skeleton Makeover    FPS: ...");
 
     if (argv[1] == NULL) argv[1] = "0";
 	initialize(argv[0], argv[1]);
 
+	// Events
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyEvents);
 	glutSpecialFunc(special);
+
+	// Timers
+	glutTimerFunc(time_step, update, 0);
 	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  // fps counter
 	glutTimerFunc(20, ballBounce, 0);    // ball physics
 	glutTimerFunc(20, animateDoor, 0);   // animate door ball
@@ -129,8 +168,11 @@ int main(int argc, char *argv[])
 	else
 		glutTimerFunc(20, guardAnimation, 0); 
 	
+
 	glutMainLoop();
+	aiReleaseImport(get_scene());
 	
 
 	return EXIT_SUCCESS;
 }
+

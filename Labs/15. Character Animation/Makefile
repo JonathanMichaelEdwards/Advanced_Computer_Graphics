@@ -9,21 +9,18 @@
 
 
 # App Name
-TARGET = main.out
+TARGET = CharAnimation.out
 
 # Definitions
 CC = g++
-# DEBUG = -g
-OPT = -O2
-CFLAGS = -c $(DEBUG) -Wall -std=c++11
-EXE = -no-pie# changes (x-libshare -> x-executable)
+CFLAGS = -c -g -Wall -std=c++11
+EXE = -no-pie  # changes (x-libshare -> x-executable)
 
 # Libraries & Includes
 INCLUDES = -I./include -I./usr/include/ -I./usr/local/include/
-OPENGL_LIB = -lGL -lGLU -lGLEW -lglut
+OPEN_MESH = -lOpenMeshCore -lOpenMeshTools
 DEVIL = -lIL -lILU -lILUT
-ASSIMP = -lassimp
-CC_LIBS = -lpthread
+OPENGL_LIB = -lGL -lGLU -lGLEW -lglut -lassimp
 
 # Generating Object Name
 SOURCES_LOCATION  = ./src
@@ -48,7 +45,7 @@ all: clean $(TARGET)
 
 # Compile: create object files from C++ source files
 %.o: $(SOURCES_LOCATION)/%.cpp
-	$(CC) $(CFLAGS) $(OPT) -o build/$@ $< $(INCLUDES)
+	$(CC) $(CFLAGS) -o build/$@ $< $(INCLUDES)
 
 
 # Link: create output file from object files
@@ -56,7 +53,7 @@ $(TARGET): $(OBJECTS)
 	@echo $(PRINT_END)
 	@echo $(LINK_OBJ_MESSAGE)
 	@echo $(PRINT_BEGIN)
-	$(CC) $(EXE) $(OPT) build/*.o -o $@ $(CC_LIBS) $(OPENGL_LIB) $(DEVIL) $(ASSIMP)
+	$(CC) $(EXE) build/*.o -o $@ $(OPENGL_LIB) $(DEVIL) $(OPEN_MESH)
 	@echo $(PRINT_END)
 	
 
@@ -65,7 +62,7 @@ $(TARGET): $(OBJECTS)
 clean:
 	@echo $(REMOVE_MESSAGE)
 	@echo $(PRINT_BEGIN)
-	-rm -f build/*.o $(TARGET)
+	-rm -f build/*.o main
 	@echo $(PRINT_END)
 	@echo $(LINK_NAN_MESSAGE)
 	@echo $(PRINT_BEGIN)

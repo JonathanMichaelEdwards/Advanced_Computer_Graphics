@@ -34,8 +34,10 @@ static void idle(int delay)
 
 
 static int viewState = 0;
-float angle=0;
-GLdouble angle_top=0; 
+float angle_cam=0;
+GLdouble angle_cam_top=0; 
+
+
 
 // ----------------------------------------------------------------------------
 //							Special key event callback 
@@ -45,8 +47,8 @@ void special(int key, int x, int y)
 	if (key == GLUT_KEY_END) exit(EXIT_SUCCESS);
 
 	if (viewState) {
-		if(key == GLUT_KEY_LEFT) topBottomLeft();       //angle_top -= 0.1;  //Change direction
-		else if(key == GLUT_KEY_RIGHT) topBottomRight(); //angle_top += 0.1;
+		if(key == GLUT_KEY_LEFT) topBottomLeft();       //angle_cam_top -= 0.1;  //Change direction
+		else if(key == GLUT_KEY_RIGHT) topBottomRight(); //angle_cam_top += 0.1;
 		if(key == GLUT_KEY_DOWN)
 			topBottomBack();
 		else if(key == GLUT_KEY_UP)
@@ -55,18 +57,18 @@ void special(int key, int x, int y)
 		getView(viewState);  // get view info
 	} 
 	else if (!viewState) {
-		if(key == GLUT_KEY_LEFT) angle -= 0.1;  //Change direction
-		else if(key == GLUT_KEY_RIGHT) angle += 0.1;
+		if(key == GLUT_KEY_LEFT) angle_cam -= 0.1;  //Change direction
+		else if(key == GLUT_KEY_RIGHT) angle_cam += 0.1;
 		else if(key == GLUT_KEY_DOWN)
 		{  //Move backward
-			moveBack(angle);
+			moveBack(angle_cam);
 		}
 		else if(key == GLUT_KEY_UP)
 		{ //Move forward
 			// position the person it from the centre
-			moveForward(angle);
+			moveForward(angle_cam);
 		}
-		lookRotation(angle, viewState);
+		lookRotation(angle_cam, viewState);
 	}
 	
     glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);
@@ -86,7 +88,7 @@ void keyEvents(unsigned char key, int x, int y)
 	// signal to change view
 	if (key == 'v' || key == 'V') {
 		viewState++;
-		lookRotation(angle, viewState);  // 3d person view
+		lookRotation(angle_cam, viewState);  // 3d person view
 		if (viewState == 2) {
 			viewState = 0;
 			getView(viewState);  // top down view

@@ -8,20 +8,8 @@
 
 
 // Standard libaries
-#include <stdio.h>
-#include <stdlib.h>
 #include <libgen.h>  
-#include <math.h>
-#include <pthread.h>
-#include <sys/types.h>
-#include <unistd.h>
 
-
-// OpenGL libaries
-#include <GL/freeglut.h>
-#include <GL/glut.h>
-
-// Personal libaries
 #include "display.h"
 #include "loadTGA.h"
 #include "peripherals.h"
@@ -234,7 +222,7 @@ void showFPS(void)
 
 	// Display FPS every 1/4 a second
 	if (elapsedTime > QUATER_SEC) {
-		sprintf(title, "Museum    FPS: %.2f", (frameCount / elapsedTime) * FPS_SEC);
+		sprintf(title, "Skeleton Makeover    FPS: %.2f", (frameCount / elapsedTime) * FPS_SEC);
 		glutSetWindowTitle(title);
 
 		endTime = startTime;
@@ -327,7 +315,7 @@ void topBottomRight(void)
 /// --------------------------------------
 
 
-#define TEX 11
+#define TEX 12
 GLuint txId[TEX] = { 0 };   //Texture ids
 
 
@@ -1993,6 +1981,495 @@ void drawFountain(void)
 
 
 
+
+
+
+
+
+
+const aiScene *scene = NULL;
+aiScene _scene;
+float angle = 0;
+aiVector3D scene_center;
+float scene_scale;
+bool modelRotn = false;
+float fov = 10.0;
+map<int, int> texIdMap;
+
+//------------Modify the following as needed----------------------
+float materialCol[4] = { 0.9, 0.9, 0.9, 1 };   //Default material colour (not used if model's colour is available)
+bool replaceCol = false;					   //Change to 'true' to set the model's colour to the above colour
+float lightPosn[4] = { 0, 50, 50, 1 };         //Default light's position
+
+
+
+aiScene* get_scene()
+{
+	return &_scene;
+}
+
+
+// ------ - Loads model data from file and creates a scene object----------
+int loadModel(const char* fileName, unsigned long anim_flag)
+{
+	aiVector3D scene_min, scene_max, scene_diag;
+	scene = aiImportFile(fileName, aiProcessPreset_TargetRealtime_MaxQuality | anim_flag);
+	if (scene == NULL) exit(1);
+	// printSceneInfo(scene);
+	// printMeshInfo(scene);
+	// printTreeInfo(scene->mRootNode);
+	// printBoneInfo(scene);
+	// printAnimInfo(scene);  //WARNING:  This may generate a lengthy output if the model has animation data
+	get_bounding_box(scene, &scene_min, &scene_max);
+	scene_center = (scene_min + scene_max) * 0.5f;
+	scene_diag = scene_max - scene_center;  //diagonal vector
+	scene_scale = 1.0 / scene_diag.Length();
+
+	_scene = *scene;
+
+
+	return scene->mAnimations[0]->mDuration;
+}
+
+
+//-------------Loads texture files using DevIL library-------------------------------
+void loadGLTextures_devil(void)
+{
+	/* initialization of DevIL */
+	ilInit();
+	if (scene->HasTextures())
+	{
+		std::cout << "Support for meshes with embedded textures is not implemented" << endl;
+		//TO DO
+	}
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+	glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+	glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+	/* scan scene's materials for textures */
+	/* Simplified version: Retrieves only the first texture with index 0 if present*/
+	for (unsigned int m = 0; m < scene->mNumMaterials; ++m)
+	{
+		aiString path;  // filename
+		// 
+
+		if (scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS)
+		{
+			glEnable(GL_TEXTURE_2D);
+			ILuint imageId;
+			GLuint texId;
+			ilGenImages(1, &imageId);
+			ilBindImage(imageId); /* Binding of DevIL image name */
+			ilEnable(IL_ORIGIN_SET);
+			ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+
+			char file_name[1039] = { 0 };
+
+			char *data = path.data; 
+			sprintf(file_name, "%s/%s", MODEL_PATH_1, data);  // formating file path
+			if (ilLoadImage((ILstring)file_name))   //if success
+			{
+				/* Convert image to RGBA */
+				ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+
+				/* Create and load textures to OpenGL */
+				glGenTextures(1, &texId);
+				texIdMap[m] = texId;   //store tex ID against material id in a hash map
+				glBindTexture(GL_TEXTURE_2D, texId);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ilGetInteger(IL_IMAGE_WIDTH),
+				ilGetInteger(IL_IMAGE_HEIGHT), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData());
+				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+				cout << "Texture:" << file_name << " successfully loaded." << endl;
+			}
+			else
+			{
+				cout << "Couldn't load Image: " << file_name << endl;
+			}
+		}
+	}  //loop for material
+}
+
+// // ------A recursive function to traverse scene graph and render each mesh----------
+// void render (const aiScene* sc, const aiNode* node)
+// {
+// 	aiMatrix4x4 m = node->mTransformation;
+// 	aiMesh* mesh;
+// 	aiFace* face;
+// 	aiMaterial* mtl;
+// 	GLuint texId;
+// 	aiColor4D diffuse;
+// 	int meshIndex, materialIndex;
+
+// 	aiTransposeMatrix4(&m);   //Convert to column-major order
+// 	glPushMatrix();
+// 	glMultMatrixf((float*)&m);   //Multiply by the transformation matrix for this node
+
+// 			if ((strcmp((node->mName).data, "leg") == 0))
+// 		{
+// 			puts("yes");
+// 			printf("%d\n", (node->mName.data));
+// 		}
+
+// 	// Draw all meshes assigned to this node
+// 	for (int n = 0; n < node->mNumMeshes; n++)
+// 	{
+// 		meshIndex = node->mMeshes[n];          //Get the mesh indices from the current node
+// 		mesh = scene->mMeshes[meshIndex];    //Using mesh index, get the mesh object
+
+// 		materialIndex = mesh->mMaterialIndex;  //Get material index attached to the mesh
+// 		mtl = sc->mMaterials[materialIndex];
+// 		if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_DIFFUSE, &diffuse))  //Get material colour from model
+// 			glColor4f(diffuse.r, diffuse.g, diffuse.b, 1.0);
+// 		else
+// 			glColor4fv(materialCol);   //Default material colour
+
+// 		// if (mesh->HasTextureCoords(0))
+// 		// {
+// 		// 	glEnable(GL_TEXTURE_2D);
+// 		// 	texId = texIdMap[materialIndex];    //Use map to get texId from material index
+// 		// 	glBindTexture(GL_TEXTURE_2D, texId);
+// 		// }
+// 		// else
+// 		// 	glDisable(GL_TEXTURE_2D);
+
+
+
+// 		//Get the polygons from each mesh and draw them
+// 		for (int k = 0; k < mesh->mNumFaces; k++)
+// 		{
+// 			face = &mesh->mFaces[k];
+// 			GLenum face_mode;
+
+// 			switch(face->mNumIndices)
+// 			{
+// 				case 1: face_mode = GL_POINTS; break;
+// 				case 2: face_mode = GL_LINES; break;
+// 				case 3: face_mode = GL_TRIANGLES; break;
+// 				default: face_mode = GL_POLYGON; break;
+// 			}
+
+// 			glBegin(face_mode);
+// 			for(int i = 0; i < face->mNumIndices; i++) {
+// 				int vertexIndex = face->mIndices[i]; 
+// 				if (mesh->HasTextureCoords(0))
+// 					glTexCoord2f(mesh->mTextureCoords[0][vertexIndex].x, mesh->mTextureCoords[0][vertexIndex].y);
+// 				if (mesh->HasNormals())
+// 					glNormal3fv(&mesh->mNormals[vertexIndex].x);
+// 				glVertex3fv(&mesh->mVertices[vertexIndex].x);
+// 			}
+// 			glEnd();
+// 		}
+// 	}
+
+// 	// Draw all children
+// 	for (int i = 0; i < node->mNumChildren; i++)
+// 		render(sc, node->mChildren[i]);
+
+// 	glPopMatrix();
+// }
+
+
+
+
+
+aiMesh* mesh;
+aiFace* face;
+// float materialCol[4] = { 1, 0, 1, 1 };
+int meshIndex;
+
+void draw_manager(bool color, const char *data, const aiNode* nd)
+{
+		if ((strcmp(data, "Chest") == 0))
+		{
+			puts("\n");
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(0, .7, .7);
+				glTranslatef(0, 6, 0);
+				glScalef(1, 2, 1);
+				glutSolidCube(10);
+			glPopMatrix();
+		} 
+		else if ((strcmp(data, "Head") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(1, 0, 0);
+				glTranslatef(0, 2, 0);
+				glutSolidSphere(5, 36, 18);
+			glPopMatrix();
+		} 
+		else if ((strcmp(data, "Neck") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(1, 0, 0);
+				glScalef(1, 2, 1);
+				glutSolidCube(2);
+			glPopMatrix();
+		} 
+		else if ((strcmp(data, "LeftLowArm") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(1, 0, 0);
+				glTranslatef(0, -8, 0);
+				glScalef(2, 8, 1);
+				glutSolidCube(2);
+			glPopMatrix();
+		} 
+		else if ((strcmp(data, "RightLowArm") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(1, 0, .8);
+				glTranslatef(0, -8, 0);
+				glScalef(2, 8, 1);
+				glutSolidCube(2);
+			glPopMatrix();
+		}
+		else if ((strcmp(data, "LeftUpArm") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(1, 0, 0);
+				glTranslatef(0, -8, 0);
+				glScalef(2, 8, 1);
+				glutSolidCube(2);
+			glPopMatrix();
+		} 
+		else if ((strcmp(data, "RightUpArm") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(1, 0, .8);
+				glTranslatef(0, -8, 0);
+				glScalef(2, 8, 1);
+				glutSolidCube(2);
+			glPopMatrix();
+		}
+		else if ((strcmp(data, "LeftUpLeg") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(0, 0, 1);
+				glTranslatef(0, -10, 0);
+				glScalef(2, 10, 2);
+				glutSolidCube(2);
+			glPopMatrix();
+		}
+		else if ((strcmp(data, "RightUpLeg") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(0, 0, 1);
+				glTranslatef(0, -10, 0);
+				glScalef(2, 10, 2);
+				glutSolidCube(2);
+			glPopMatrix();
+		}		else if ((strcmp(data, "LeftLowLeg") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(0, 0, 1);
+				glTranslatef(0, -8, 0);
+				glScalef(2, 10, 2);
+				glutSolidCube(2);
+			glPopMatrix();
+		}
+		else if ((strcmp(data, "RightLowLeg") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(0, 0, 1);
+				glTranslatef(0, -8, 0);
+				glScalef(2, 10, 2);
+				glutSolidCube(2);
+			glPopMatrix();
+		}
+		else if ((strcmp(data, "LeftHand") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(0, 0, 1);
+				glTranslatef(0, -8, 0);
+				glScalef(2, 2, 2);
+				glutSolidCube(2);
+			glPopMatrix();
+		}
+		else if ((strcmp(data, "RightHand") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(0, 0, 1);
+				glTranslatef(0, -8, 0);
+				glScalef(2, 2, 2);
+				glutSolidCube(2);
+			glPopMatrix();
+		}
+				else if ((strcmp(data, "LeftFoot") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(0, 0, 0);
+				glTranslatef(0, -2, 2);
+				glRotatef(180, 1, 0, 0);
+				glScalef(2, 1, 4);
+				glutSolidCube(2);
+			glPopMatrix();
+		}
+		else if ((strcmp(data, "RightFoot") == 0))
+		{
+			glPushMatrix();
+				if (!color) glColor3f(0.2, 0.2, 0.2);  // shadow color
+				else glColor3f(0, 0, 0);
+				glTranslatef(0, -2, 2);
+				glRotatef(180, 1, 0, 0);
+				glScalef(2, 1, 4);
+				glutSolidCube(2);
+			glPopMatrix();
+		}
+		else
+		{
+			// printf("%s\n", data);
+			// Draw all meshes assigned to this node
+			for (int n = 0; n < nd->mNumMeshes; n++)
+			{
+				meshIndex = nd->mMeshes[n];          //Get the mesh indices from the current node
+				mesh = scene->mMeshes[meshIndex];    //Using mesh index, get the mesh object
+				glColor4fv(materialCol);   //Default material colour
+
+				//Get the polygons from each mesh and draw them
+				for (int k = 0; k < mesh->mNumFaces; k++)
+				{
+					face = &mesh->mFaces[k];
+					glBegin(GL_TRIANGLES);
+						for (int i = 0; i < face->mNumIndices; i++) {
+							int vertexIndex = face->mIndices[i];
+							if (mesh->HasNormals())
+								glNormal3fv(&mesh->mNormals[vertexIndex].x);
+
+							glVertex3fv(&mesh->mVertices[vertexIndex].x);
+						}
+					glEnd();
+				}
+			}
+		}
+}
+
+
+// ------A recursive function to traverse scene graph and render each mesh----------
+void render(const aiScene* sc, const aiNode* nd)
+{
+	aiMatrix4x4 m = nd->mTransformation;
+
+
+	float mx = 1;
+	float my = 2;
+	float mz = 10;
+
+	float shadowMat[16] = { my,0,0,0, -mx,0,-mz,-1, 0,0,my,0, 0,0,0,my };
+
+		
+	// glPushMatrix();
+	// 	// Draw Shadow Object
+	// 	glTranslatef(0 , FLOOR_BED+0.01, 0);  // transform shadow to be on the ground
+	// 	glMultMatrixf(shadowMat);
+	// 	glTranslatef(guardPosX+2 , -1, guardPosZ);
+	// 	glRotatef(guardTheta, 0, 1, 0);
+
+	// 	glScalef(0.2, 0.2, 0.2);
+	// 	drawGuard(false);
+	// glPopMatrix();
+
+	// glEnable(GL_LIGHTING);
+	// // draw the guard in the scene
+	// glPushMatrix();	
+	// 	//Draw Actual Object
+	// 	glTranslatef(guardPosX , FLOOR_BED, guardPosZ);
+	// 	glRotatef(guardTheta, 0, 1, 0);
+
+	// 	glScalef(0.2, 0.2, 0.2);
+	// 	drawGuard(true);
+	// glPopMatrix();
+
+
+	
+	m.Transpose();      //Convert to column-major order
+
+	// glDisable(GL_LIGHTING);
+	// glPushMatrix();
+	// 	// glMultMatrixf((float*)&m);   //Multiply by the transformation matrix for this node
+
+	// 	// glPushMatrix();
+	// 	// Draw Shadow Object
+	// 	// glTranslatef(0 , FLOOR_BED+0.01, 0);  // transform shadow to be on the ground
+	// 	glMultMatrixf(shadowMat);
+	// 	draw_manager(false, (nd->mName).data, nd);
+
+	// 	// // Recursively draw all children of the current node
+	// 	// for (int i = 0; i < nd->mNumChildren; i++)
+	// 	// 	render(sc, nd->mChildren[i]);
+	// glPopMatrix();
+
+
+
+
+	glEnable(GL_LIGHTING);
+	glPushMatrix();
+		glMultMatrixf((float*)&m);   //Multiply by the transformation matrix for this node
+		draw_manager(true, (nd->mName).data, nd);
+
+		// Recursively draw all children of the current node
+		for (int i = 0; i < nd->mNumChildren; i++)
+			render(sc, nd->mChildren[i]);
+	glPopMatrix();
+}
+
+
+
+
+
+void updateNodeMatrices(int tick)
+{
+    int index;
+    aiAnimation *anim = scene->mAnimations[0];
+    aiMatrix4x4 m_pos, m_rot, m_prod;
+    aiNode *node;
+
+	// tick = 0;
+    for (uint i = 0; i < anim->mNumChannels; i++)
+	{
+        m_pos = aiMatrix4x4(); //Identity
+        m_rot = aiMatrix4x4();
+
+        aiNodeAnim *ndAnim = anim->mChannels[i]; //Channel
+        if (ndAnim->mNumPositionKeys > 1) 
+			index = tick;
+        else 
+			index = 0;
+
+        aiVector3D posn = (ndAnim->mPositionKeys[index]).mValue;
+        m_pos.Translation(posn, m_pos);
+        if (ndAnim->mNumRotationKeys > 1) 
+			index = tick;
+        else 
+			index = 0;
+
+        aiQuaternion rotn = (ndAnim->mRotationKeys[index]).mValue;
+        
+        m_rot = aiMatrix4x4(rotn.GetMatrix());
+        m_prod = m_pos * m_rot;
+
+        node = scene->mRootNode->FindNode(ndAnim->mNodeName);
+        node->mTransformation = m_prod;
+    }
+}
+
+
+
 const float orange[4]  = {1, 0.5, 0, 1};
 // ----------------------------------------------------------------------------
 //  				  		Display OpenGL graphics				
@@ -2015,6 +2492,8 @@ void display(void)
 		// gluLookAt(-5, 1, 0,  0, 0, -1, 0, 1, 0);
 		gluLookAt(eye_x, 0.5, eye_z,  look_x, 0.5, look_z,   0, 1, 0);	
 	}
+	
+
 	
 
 	// Default house lighting
@@ -2183,7 +2662,20 @@ void display(void)
 		particleFountain();
 	glPopMatrix();
 
+
+
+
+	glPushMatrix();
+		// Translate and scale the whole asset to fit into our view frustum 
+		glScalef(scene_scale, scene_scale, scene_scale);
+		glTranslatef(-scene_center.x, -scene_center.y-40, -scene_center.z);
+		// glTranslatef(500, 0, 0); // x 
+
+		render(scene, scene->mRootNode);  //This is a recursive function!
+	glPopMatrix();
 	
+
+
 	glutSwapBuffers();	
 
 	showFPS();
