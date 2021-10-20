@@ -2172,6 +2172,12 @@ void loadGLTextures_devil(void)
 
 
 
+static bool model_enhan = false;
+
+void get_model_en(bool _model_enhan)
+{
+    model_enhan = _model_enhan;
+}
 
 
 aiMesh* mesh;
@@ -2181,6 +2187,8 @@ int meshIndex;
 
 void draw_manager(bool color, const char *data, const aiNode* nd)
 {
+	if (!model_enhan)
+	{
 		if ((strcmp(data, "Chest") == 0))
 		{
 			puts("\n");
@@ -2331,32 +2339,33 @@ void draw_manager(bool color, const char *data, const aiNode* nd)
 				glutSolidCube(2);
 			glPopMatrix();
 		}
-		else
+	}
+	else
+	{
+		// printf("%s\n", data);
+		// Draw all meshes assigned to this node
+		for (int n = 0; n < nd->mNumMeshes; n++)
 		{
-			// printf("%s\n", data);
-			// Draw all meshes assigned to this node
-			for (int n = 0; n < nd->mNumMeshes; n++)
+			meshIndex = nd->mMeshes[n];          //Get the mesh indices from the current node
+			mesh = scene->mMeshes[meshIndex];    //Using mesh index, get the mesh object
+			glColor4fv(materialCol);   //Default material colour
+
+			//Get the polygons from each mesh and draw them
+			for (int k = 0; k < mesh->mNumFaces; k++)
 			{
-				meshIndex = nd->mMeshes[n];          //Get the mesh indices from the current node
-				mesh = scene->mMeshes[meshIndex];    //Using mesh index, get the mesh object
-				glColor4fv(materialCol);   //Default material colour
+				face = &mesh->mFaces[k];
+				glBegin(GL_TRIANGLES);
+					for (int i = 0; i < face->mNumIndices; i++) {
+						int vertexIndex = face->mIndices[i];
+						if (mesh->HasNormals())
+							glNormal3fv(&mesh->mNormals[vertexIndex].x);
 
-				//Get the polygons from each mesh and draw them
-				for (int k = 0; k < mesh->mNumFaces; k++)
-				{
-					face = &mesh->mFaces[k];
-					glBegin(GL_TRIANGLES);
-						for (int i = 0; i < face->mNumIndices; i++) {
-							int vertexIndex = face->mIndices[i];
-							if (mesh->HasNormals())
-								glNormal3fv(&mesh->mNormals[vertexIndex].x);
-
-							glVertex3fv(&mesh->mVertices[vertexIndex].x);
-						}
-					glEnd();
-				}
+						glVertex3fv(&mesh->mVertices[vertexIndex].x);
+					}
+				glEnd();
 			}
 		}
+	}
 }
 
 
@@ -2440,32 +2449,33 @@ void updateNodeMatrices(int tick)
     aiNode *node;
 
 	// tick = 0;
-    for (uint i = 0; i < anim->mNumChannels; i++)
+
+	for (uint i = 0; i < anim->mNumChannels; i++)
 	{
-        m_pos = aiMatrix4x4(); //Identity
-        m_rot = aiMatrix4x4();
+		m_pos = aiMatrix4x4(); //Identity
+		m_rot = aiMatrix4x4();
 
-        aiNodeAnim *ndAnim = anim->mChannels[i]; //Channel
-        if (ndAnim->mNumPositionKeys > 1) 
+		aiNodeAnim *ndAnim = anim->mChannels[i]; //Channel
+		if (ndAnim->mNumPositionKeys > 1) 
 			index = tick;
-        else 
+		else 
 			index = 0;
 
-        aiVector3D posn = (ndAnim->mPositionKeys[index]).mValue;
-        m_pos.Translation(posn, m_pos);
-        if (ndAnim->mNumRotationKeys > 1) 
+		aiVector3D posn = (ndAnim->mPositionKeys[index]).mValue;
+		m_pos.Translation(posn, m_pos);
+		if (ndAnim->mNumRotationKeys > 1) 
 			index = tick;
-        else 
+		else 
 			index = 0;
 
-        aiQuaternion rotn = (ndAnim->mRotationKeys[index]).mValue;
-        
-        m_rot = aiMatrix4x4(rotn.GetMatrix());
-        m_prod = m_pos * m_rot;
+		aiQuaternion rotn = (ndAnim->mRotationKeys[index]).mValue;
+		
+		m_rot = aiMatrix4x4(rotn.GetMatrix());
+		m_prod = m_pos * m_rot;
 
-        node = scene->mRootNode->FindNode(ndAnim->mNodeName);
-        node->mTransformation = m_prod;
-    }
+		node = scene->mRootNode->FindNode(ndAnim->mNodeName);
+		node->mTransformation = m_prod;
+	}
 }
 
 

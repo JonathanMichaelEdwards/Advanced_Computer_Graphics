@@ -44,13 +44,20 @@ void initialize(char *pjtPath, char *OS)
 
 
 	//---- Load model and textures -- anumation ------
-	char file_name[30] = { 0 };
+	char *file_name = { 0 };
 
 	// sprintf(file_name, "%s/%s", MODEL_PATH_1, MODEL_1);  // formating file path
 	// loadModel(file_name, 0);  // Model - mantalpice
 	
-	sprintf(file_name, "%s/%s", MODEL_PATH_2, MODEL_2);  // formating file path
-	period = loadModel(file_name, aiProcess_Debone);  // Movement
+	// sprintf(file_name, "%s/%s", MODEL_PATH_2, MODEL_2);  // formating file path
+	
+	// if (!anim_scene) 
+	// 	period = 
+	// else 
+	// 	period = 
+	
+	period = loadModel("./models/Mov/Dance.bvh", aiProcess_Debone);  // Movement
+
 	// loadGLTextures_devil();
 
 

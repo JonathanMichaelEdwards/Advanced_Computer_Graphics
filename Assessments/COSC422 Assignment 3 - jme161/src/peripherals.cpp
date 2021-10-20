@@ -76,6 +76,8 @@ void special(int key, int x, int y)
 
 
 
+bool model_enhan = false;
+
 // ----------------------------------------------------------------------------
 //							ASCII key event callback 
 // ----------------------------------------------------------------------------
@@ -104,6 +106,8 @@ void keyEvents(unsigned char key, int x, int y)
 	if (key == SPACE) spacePressed(true);
 	if (key == 'd' || key == 'D') doorAction(true);
 
+	if (key == 'E' || key == 'e')
+		get_model_en(model_enhan=!model_enhan);
 
     glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  
 }

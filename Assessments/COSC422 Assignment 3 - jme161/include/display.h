@@ -67,6 +67,7 @@ void collBox(int value);
 void guardAnimation(int value);
 void init_particle(void);
 
+void get_model_en(bool _model_enhan);
 char *getPath(char *path, int _OS);
 void loadTexture(void);	
 void display(void);

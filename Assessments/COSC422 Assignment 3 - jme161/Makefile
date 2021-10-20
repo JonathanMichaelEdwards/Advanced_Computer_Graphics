@@ -13,7 +13,7 @@ TARGET = main.out
 
 # Definitions
 CC = g++
-# DEBUG = -g
+DEBUG = -g
 OPT = -O2
 CFLAGS = -c $(DEBUG) -Wall -std=c++11
 EXE = -no-pie# changes (x-libshare -> x-executable)
